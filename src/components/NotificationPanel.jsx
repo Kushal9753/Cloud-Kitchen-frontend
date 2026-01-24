@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Bell, X, Check, CheckCheck, Trash2 } from 'lucide-react';
 import axios from 'axios';
 import { getSocket } from '../utils/socket';
-import config from '../config';
+// config import removed
 
 const NotificationPanel = ({ userId }) => {
     const [isOpen, setIsOpen] = useState(false);
@@ -27,7 +27,7 @@ const NotificationPanel = ({ userId }) => {
 
         setLoading(true);
         try {
-            const { data } = await axios.get(`${config.API_URL}/api/notifications`, {
+            const { data } = await axios.get(`http://localhost:5000/api/notifications`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             setNotifications(data);
@@ -43,7 +43,7 @@ const NotificationPanel = ({ userId }) => {
         if (!token) return;
 
         try {
-            const { data } = await axios.get(`${config.API_URL}/api/notifications/unread-count`, {
+            const { data } = await axios.get(`http://localhost:5000/api/notifications/unread-count`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             setUnreadCount(data.count);
@@ -58,7 +58,7 @@ const NotificationPanel = ({ userId }) => {
 
         try {
             await axios.put(
-                `${config.API_URL}/api/notifications/${notificationId}/read`,
+                `http://localhost:5000/api/notifications/${notificationId}/read`,
                 {},
                 { headers: { Authorization: `Bearer ${token}` } }
             );
@@ -79,7 +79,7 @@ const NotificationPanel = ({ userId }) => {
 
         try {
             await axios.put(
-                `${config.API_URL}/api/notifications/read-all`,
+                `http://localhost:5000/api/notifications/read-all`,
                 {},
                 { headers: { Authorization: `Bearer ${token}` } }
             );

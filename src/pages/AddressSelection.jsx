@@ -3,10 +3,10 @@ import { useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { motion, AnimatePresence } from 'framer-motion';
 import axios from 'axios';
-import config from '../config';
+// config import removed
 import { ArrowRight, MapPin, Phone, User, Plus, Check, Trash2, Home, Loader2 } from 'lucide-react';
 
-const API_URL = `${config.API_URL}/api`;
+const API_URL = `http://localhost:5000/api`;
 
 const AddressSelection = () => {
     const navigate = useNavigate();

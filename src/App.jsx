@@ -16,7 +16,7 @@ import AddressSelection from './pages/AddressSelection';
 import PaymentPage from './pages/PaymentPage';
 
 import Profile from './pages/Profile';
-import NetworkDebugger from './components/NetworkDebugger';
+// NetworkDebugger import removed
 
 
 import { useDispatch } from 'react-redux';
@@ -40,7 +40,6 @@ function App() {
         <div className="min-h-screen font-sans transition-colors duration-500" style={{ background: 'var(--bg-gradient)', color: 'var(--text-primary)' }}>
             {showNavbar && <Navbar />}
             <main className="">
-                <NetworkDebugger />
                 <Routes>
                     {/* Public Routes */}
                     <Route path="/login" element={<Login />} />

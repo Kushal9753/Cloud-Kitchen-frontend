@@ -1,18 +1,11 @@
 import { io } from 'socket.io-client';
-import config from '../config';
 
 let socket = null;
 
 export const getSocket = () => {
-    // Default to DISABLED on Vercel unless explicitly enabled
-    // This prevents "Connection Refused" errors on serverless envs
-    if (!config.SOCKET_ENABLED) {
-        return null;
-    }
-
     if (!socket) {
         try {
-            socket = io(config.API_URL, {
+            socket = io('http://localhost:5000', {
                 transports: ['websocket', 'polling'],
                 reconnectionAttempts: 3,
                 timeout: 5000,

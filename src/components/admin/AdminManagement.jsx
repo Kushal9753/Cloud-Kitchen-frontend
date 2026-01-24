@@ -3,7 +3,7 @@ import { useSelector } from 'react-redux';
 import { motion, AnimatePresence } from 'framer-motion';
 import { UserPlus, Lock, Eye, EyeOff, Trash2, Shield, Mail, Calendar } from 'lucide-react';
 import axios from 'axios';
-import config from '../../config';
+// config import removed
 
 const AdminManagement = ({ showToast }) => {
     const { user } = useSelector((state) => state.auth);
@@ -44,7 +44,7 @@ const AdminManagement = ({ showToast }) => {
 
         try {
             const { data } = await axios.get(
-                `${config.API_URL}/api/admin/admins`,
+                `http://localhost:5000/api/admin/admins`,
                 { headers: { Authorization: `Bearer ${user.token}` } }
             );
             setAdmins(data);
@@ -77,7 +77,7 @@ const AdminManagement = ({ showToast }) => {
         setAddAdminLoading(true);
         try {
             const { data } = await axios.post(
-                `${config.API_URL}/api/admin/admins`,
+                `http://localhost:5000/api/admin/admins`,
                 addAdminForm,
                 { headers: { Authorization: `Bearer ${user.token}` } }
             );
@@ -97,7 +97,7 @@ const AdminManagement = ({ showToast }) => {
         setDeleting(true);
         try {
             const { data } = await axios.delete(
-                `${config.API_URL}/api/admin/admins/${adminId}`,
+                `http://localhost:5000/api/admin/admins/${adminId}`,
                 { headers: { Authorization: `Bearer ${user.token}` } }
             );
 
@@ -133,7 +133,7 @@ const AdminManagement = ({ showToast }) => {
         setChangePasswordLoading(true);
         try {
             const { data } = await axios.put(
-                `${config.API_URL}/api/admin/change-password`,
+                `http://localhost:5000/api/admin/change-password`,
                 {
                     currentPassword: changePasswordForm.currentPassword,
                     newPassword: changePasswordForm.newPassword

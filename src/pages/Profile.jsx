@@ -3,7 +3,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import axios from 'axios';
-import config from '../config';
+// config import removed
 import {
     User, Package, MapPin, CreditCard, Tag, Settings,
     ChevronRight, LogOut, Edit, Trash, Plus, Check,
@@ -39,23 +39,23 @@ const Profile = () => {
             try {
                 switch (activeTab) {
                     case 'orders':
-                        const ordersRes = await axios.get(`${config.API_URL}/api/orders/myorders/${user._id}`);
+                        const ordersRes = await axios.get(`http://localhost:5000/api/orders/myorders/${user._id}`);
                         setOrders(ordersRes.data);
                         break;
                     case 'addresses':
-                        const addressesRes = await axios.get(`${config.API_URL}/api/addresses`, {
+                        const addressesRes = await axios.get(`http://localhost:5000/api/addresses`, {
                             headers: { Authorization: `Bearer ${user.token}` }
                         });
                         setAddresses(addressesRes.data);
                         break;
                     case 'payments':
-                        const paymentsRes = await axios.get(`${config.API_URL}/api/payments/history`, {
+                        const paymentsRes = await axios.get(`http://localhost:5000/api/payments/history`, {
                             headers: { Authorization: `Bearer ${user.token}` }
                         });
                         setPayments(paymentsRes.data);
                         break;
                     case 'coupons':
-                        const couponsRes = await axios.get(`${config.API_URL}/api/coupons`);
+                        const couponsRes = await axios.get(`http://localhost:5000/api/coupons`);
                         setCoupons(couponsRes.data);
                         break;
                 }
