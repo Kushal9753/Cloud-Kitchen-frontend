@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import config from '../../config';
 import { motion } from 'framer-motion';
 import {
     LineChart, Line, AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell,
@@ -32,11 +33,11 @@ const Analytics = ({ showToast }) => {
         setLoading(true);
         try {
             const [dashboard, revenue, orders, foods, customers] = await Promise.all([
-                axios.get('http://localhost:5000/api/analytics/dashboard'),
-                axios.get(`http://localhost:5000/api/analytics/revenue?period=${period}&days=${days}`),
-                axios.get('http://localhost:5000/api/analytics/orders'),
-                axios.get('http://localhost:5000/api/analytics/top-foods?limit=5'),
-                axios.get('http://localhost:5000/api/analytics/top-customers?limit=5')
+                axios.get(`${config.API_URL}/api/analytics/dashboard`),
+                axios.get(`${config.API_URL}/api/analytics/revenue?period=${period}&days=${days}`),
+                axios.get(`${config.API_URL}/api/analytics/orders`),
+                axios.get(`${config.API_URL}/api/analytics/top-foods?limit=5`),
+                axios.get(`${config.API_URL}/api/analytics/top-customers?limit=5`)
             ]);
 
             setDashboardStats(dashboard.data);

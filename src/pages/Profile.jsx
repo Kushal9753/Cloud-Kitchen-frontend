@@ -3,6 +3,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import axios from 'axios';
+import config from '../config';
 import {
     User, Package, MapPin, CreditCard, Tag, Settings,
     ChevronRight, LogOut, Edit, Trash, Plus, Check,
@@ -38,23 +39,23 @@ const Profile = () => {
             try {
                 switch (activeTab) {
                     case 'orders':
-                        const ordersRes = await axios.get(`http://localhost:5000/api/orders/myorders/${user._id}`);
+                        const ordersRes = await axios.get(`${config.API_URL}/api/orders/myorders/${user._id}`);
                         setOrders(ordersRes.data);
                         break;
                     case 'addresses':
-                        const addressesRes = await axios.get('http://localhost:5000/api/addresses', {
+                        const addressesRes = await axios.get(`${config.API_URL}/api/addresses`, {
                             headers: { Authorization: `Bearer ${user.token}` }
                         });
                         setAddresses(addressesRes.data);
                         break;
                     case 'payments':
-                        const paymentsRes = await axios.get('http://localhost:5000/api/payments/history', {
+                        const paymentsRes = await axios.get(`${config.API_URL}/api/payments/history`, {
                             headers: { Authorization: `Bearer ${user.token}` }
                         });
                         setPayments(paymentsRes.data);
                         break;
                     case 'coupons':
-                        const couponsRes = await axios.get('http://localhost:5000/api/coupons');
+                        const couponsRes = await axios.get(`${config.API_URL}/api/coupons`);
                         setCoupons(couponsRes.data);
                         break;
                 }
@@ -130,8 +131,8 @@ const Profile = () => {
                                 whileTap={{ scale: 0.98 }}
                                 onClick={() => setActiveTab(tab.id)}
                                 className={`p-4 rounded-xl font-semibold transition-all ${isActive
-                                        ? 'bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-lg'
-                                        : 'glass-card'
+                                    ? 'bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-lg'
+                                    : 'glass-card'
                                     }`}
                             >
                                 <Icon className="w-5 h-5 mx-auto mb-2" />
@@ -265,8 +266,8 @@ const Profile = () => {
                                                     </p>
                                                 </div>
                                                 <span className={`px-3 py-1 rounded-full text-xs font-bold ${payment.status === 'Success'
-                                                        ? 'bg-emerald-100 text-emerald-800'
-                                                        : 'bg-amber-100 text-amber-800'
+                                                    ? 'bg-emerald-100 text-emerald-800'
+                                                    : 'bg-amber-100 text-amber-800'
                                                     }`}>
                                                     {payment.status}
                                                 </span>

@@ -3,11 +3,12 @@ import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import axios from 'axios';
+import config from '../config';
 import { QRCodeSVG } from 'qrcode.react';
 import { ShieldCheck, CreditCard, Smartphone, Building2, Wallet, Banknote, Check, Loader2, Tag, X, AlertCircle, CheckCircle2 } from 'lucide-react';
 import { clearCart } from '../features/cart/cartSlice';
 
-const API_URL = 'http://localhost:5000/api';
+const API_URL = `${config.API_URL}/api`;
 
 const PaymentPage = () => {
     const navigate = useNavigate();

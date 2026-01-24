@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Search, X, ShoppingBag, Star, Filter, ChevronDown, Sparkles } from 'lucide-react';
 import { addToCart } from '../features/cart/cartSlice';
 import axios from 'axios';
+import config from '../config';
 
 // Page transition variants - Optimized
 const pageVariants = {
@@ -77,7 +78,7 @@ const Menu = () => {
     useEffect(() => {
         const fetchFoods = async () => {
             try {
-                const { data } = await axios.get('http://localhost:5000/api/food');
+                const { data } = await axios.get(`${config.API_URL}/api/food`);
                 setFoods(data);
             } catch (error) {
                 console.error('Error fetching foods:', error);

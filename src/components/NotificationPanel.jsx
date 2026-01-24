@@ -2,9 +2,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Bell, X, Check, CheckCheck, Trash2 } from 'lucide-react';
 import axios from 'axios';
-import { io } from 'socket.io-client';
-
-const socket = io('http://localhost:5000');
+import { getSocket } from '../utils/socket';
+import config from '../config';
 
 const NotificationPanel = ({ userId }) => {
     const [isOpen, setIsOpen] = useState(false);
@@ -28,7 +27,7 @@ const NotificationPanel = ({ userId }) => {
 
         setLoading(true);
         try {
-            const { data } = await axios.get('http://localhost:5000/api/notifications', {
+            const { data } = await axios.get(`${config.API_URL}/api/notifications`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             setNotifications(data);
@@ -44,7 +43,7 @@ const NotificationPanel = ({ userId }) => {
         if (!token) return;
 
         try {
-            const { data } = await axios.get('http://localhost:5000/api/notifications/unread-count', {
+            const { data } = await axios.get(`${config.API_URL}/api/notifications/unread-count`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             setUnreadCount(data.count);
@@ -59,7 +58,7 @@ const NotificationPanel = ({ userId }) => {
 
         try {
             await axios.put(
-                `http://localhost:5000/api/notifications/${notificationId}/read`,
+                `${config.API_URL}/api/notifications/${notificationId}/read`,
                 {},
                 { headers: { Authorization: `Bearer ${token}` } }
             );
@@ -80,7 +79,7 @@ const NotificationPanel = ({ userId }) => {
 
         try {
             await axios.put(
-                'http://localhost:5000/api/notifications/read-all',
+                `${config.API_URL}/api/notifications/read-all`,
                 {},
                 { headers: { Authorization: `Bearer ${token}` } }
             );
@@ -97,22 +96,30 @@ const NotificationPanel = ({ userId }) => {
     useEffect(() => {
         fetchUnreadCount();
 
+        const socket = getSocket();
+        if (!socket) return;
+
         // Real-time listeners
-        socket.on('notification_received', (data) => {
+        const handleNotificationReceived = (data) => {
             if (data.userId === userId) {
                 setNotifications(prev => [data.notification, ...prev]);
                 setUnreadCount(prev => prev + 1);
             }
-        });
+        };
 
-        socket.on('notification_broadcast', (data) => {
+        const handleNotificationBroadcast = (data) => {
             setNotifications(prev => [data.notification, ...prev]);
             setUnreadCount(prev => prev + 1);
-        });
+        };
+
+        socket.on('notification_received', handleNotificationReceived);
+        socket.on('notification_broadcast', handleNotificationBroadcast);
 
         return () => {
-            socket.off('notification_received');
-            socket.off('notification_broadcast');
+            if (socket) {
+                socket.off('notification_received', handleNotificationReceived);
+                socket.off('notification_broadcast', handleNotificationBroadcast);
+            }
         };
     }, [userId]);
 
@@ -254,8 +261,8 @@ const NotificationPanel = ({ userId }) => {
                                                 {/* Unread indicator */}
                                                 <div className="pt-1.5">
                                                     <div className={`w-2 h-2 rounded-full ${!notification.isRead
-                                                            ? 'bg-gradient-to-r from-indigo-500 to-purple-500'
-                                                            : 'bg-gray-300'
+                                                        ? 'bg-gradient-to-r from-indigo-500 to-purple-500'
+                                                        : 'bg-gray-300'
                                                         }`} />
                                                 </div>
 

@@ -3,6 +3,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import axios from 'axios';
+import config from '../config';
 import {
     removeFromCart,
     clearCart,
@@ -42,7 +43,7 @@ const Cart = () => {
             if (cartItems.length === 0) return;
 
             try {
-                const { data } = await axios.post('http://localhost:5000/api/delivery/calculate', {
+                const { data } = await axios.post(`${config.API_URL}/api/delivery/calculate`, {
                     orderValue: itemsPrice // Use discounted items price basis
                 });
 
@@ -65,7 +66,7 @@ const Cart = () => {
         setCouponError('');
 
         try {
-            const { data } = await axios.post('http://localhost:5000/api/coupons/validate', {
+            const { data } = await axios.post(`${config.API_URL}/api/coupons/validate`, {
                 code: couponCode,
                 orderValue: itemsPrice
             });

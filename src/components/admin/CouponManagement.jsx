@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Plus, Trash, Edit, Tag, Check, X, Calendar, AlertCircle } from 'lucide-react';
 import axios from 'axios';
+import config from '../../config';
 
 const CouponManagement = ({ showToast }) => {
     const [coupons, setCoupons] = useState([]);
@@ -21,7 +22,7 @@ const CouponManagement = ({ showToast }) => {
         isActive: true
     });
 
-    const API_URL = 'http://localhost:5000/api/coupons';
+    const API_URL = `${config.API_URL}/api/coupons`;
 
     useEffect(() => {
         fetchCoupons();
@@ -178,8 +179,8 @@ const CouponManagement = ({ showToast }) => {
                             >
                                 <div className="absolute top-0 right-0 p-4">
                                     <div className={`px-2 py-1 rounded-full text-xs font-bold ${(coupon.usageLimit !== null && coupon.usedCount >= coupon.usageLimit) ? 'bg-orange-100 text-orange-700' :
-                                            (new Date() > new Date(coupon.validTo)) ? 'bg-red-100 text-red-700' :
-                                                coupon.isActive ? 'bg-emerald-100 text-emerald-700' : 'bg-gray-100 text-gray-600'
+                                        (new Date() > new Date(coupon.validTo)) ? 'bg-red-100 text-red-700' :
+                                            coupon.isActive ? 'bg-emerald-100 text-emerald-700' : 'bg-gray-100 text-gray-600'
                                         }`}>
                                         {(coupon.usageLimit !== null && coupon.usedCount >= coupon.usageLimit) ? 'LIMIT REACHED' :
                                             (new Date() > new Date(coupon.validTo)) ? 'EXPIRED' :

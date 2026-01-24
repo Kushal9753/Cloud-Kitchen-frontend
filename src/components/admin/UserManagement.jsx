@@ -5,6 +5,7 @@ import {
     AlertCircle, X, Mail, UserCheck, UserX
 } from 'lucide-react';
 import axios from 'axios';
+import config from '../../config';
 
 const fadeInUp = {
     hidden: { opacity: 0, y: 20 },
@@ -162,7 +163,7 @@ const UserManagement = ({ showToast, user }) => {
     const fetchUsers = useCallback(async () => {
         setLoading(true);
         try {
-            const { data } = await axios.get('http://localhost:5000/api/admin/users');
+            const { data } = await axios.get(`${config.API_URL}/api/admin/users`);
             setUsers(data);
         } catch (error) {
             console.error('Error fetching users:', error);
@@ -185,7 +186,7 @@ const UserManagement = ({ showToast, user }) => {
         setTogglingStatus(userId);
         try {
             const { data } = await axios.put(
-                `http://localhost:5000/api/admin/users/${userId}/status`,
+                `${config.API_URL}/api/admin/users/${userId}/status`,
                 {}
             );
 
@@ -229,14 +230,14 @@ const UserManagement = ({ showToast, user }) => {
             if (recipients === 'all') {
                 // Broadcast to all
                 await axios.post(
-                    'http://localhost:5000/api/admin/notifications/broadcast',
+                    `${config.API_URL}/api/admin/notifications/broadcast`,
                     { message }
                 );
                 showToast('Broadcast sent to all users!', 'success');
             } else {
                 // Send to selected users
                 await axios.post(
-                    'http://localhost:5000/api/admin/notifications/send',
+                    `${config.API_URL}/api/admin/notifications/send`,
                     { message, userIds: recipients }
                 );
                 showToast(`Notification sent to ${recipients.length} user(s)!`, 'success');

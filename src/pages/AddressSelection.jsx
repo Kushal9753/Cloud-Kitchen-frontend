@@ -3,9 +3,10 @@ import { useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { motion, AnimatePresence } from 'framer-motion';
 import axios from 'axios';
+import config from '../config';
 import { ArrowRight, MapPin, Phone, User, Plus, Check, Trash2, Home, Loader2 } from 'lucide-react';
 
-const API_URL = 'http://localhost:5000/api';
+const API_URL = `${config.API_URL}/api`;
 
 const AddressSelection = () => {
     const navigate = useNavigate();
@@ -157,8 +158,8 @@ const AddressSelection = () => {
                                 transition={{ delay: index * 0.1 }}
                                 onClick={() => setSelectedAddress(address._id)}
                                 className={`glass-card p-5 cursor-pointer transition-all ${selectedAddress === address._id
-                                        ? 'ring-2 ring-offset-2'
-                                        : ''
+                                    ? 'ring-2 ring-offset-2'
+                                    : ''
                                     }`}
                                 style={{
                                     '--stagger-delay': index,
@@ -171,8 +172,8 @@ const AddressSelection = () => {
                                 <div className="flex items-start justify-between">
                                     <div className="flex items-start gap-3">
                                         <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0 mt-0.5 ${selectedAddress === address._id
-                                                ? 'border-emerald-500 bg-emerald-500'
-                                                : 'border-gray-300'
+                                            ? 'border-emerald-500 bg-emerald-500'
+                                            : 'border-gray-300'
                                             }`}>
                                             {selectedAddress === address._id && <Check className="w-4 h-4 text-white" />}
                                         </div>

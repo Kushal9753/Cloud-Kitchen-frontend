@@ -3,6 +3,7 @@ import { useSelector } from 'react-redux';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
+import config from '../config';
 import { Clock, MapPin, Package, CheckCircle, Truck, ChefHat, ShoppingBag, ArrowRight, Trash2 } from 'lucide-react';
 
 const Orders = () => {
@@ -15,7 +16,7 @@ const Orders = () => {
     useEffect(() => {
         const fetchOrders = async () => {
             try {
-                const { data } = await axios.get(`http://localhost:5000/api/orders/myorders/${user._id}`);
+                const { data } = await axios.get(`${config.API_URL}/api/orders/myorders/${user._id}`);
                 setOrders(data);
             } catch (error) {
                 console.error('Error fetching orders:', error);
@@ -29,7 +30,7 @@ const Orders = () => {
     const handleDeleteOrder = async (orderId) => {
         setDeleting(true);
         try {
-            await axios.delete(`http://localhost:5000/api/orders/${orderId}`);
+            await axios.delete(`${config.API_URL}/api/orders/${orderId}`);
             // Remove from local state immediately
             setOrders(prev => prev.filter(order => order._id !== orderId));
             setDeleteConfirm(null);

@@ -11,15 +11,16 @@ import {
     TrendingUp, Star, Users, Tag
 } from 'lucide-react';
 import axios from 'axios';
-import { io } from 'socket.io-client';
+import { getSocket } from '../utils/socket';
+import config from '../config';
 import Analytics from '../components/admin/Analytics';
 import Reviews from '../components/admin/Reviews';
 import UserManagement from '../components/admin/UserManagement';
 import CouponManagement from '../components/admin/CouponManagement';
 import AdminManagement from '../components/admin/AdminManagement';
 
-// Socket connection
-const socket = io('http://localhost:5000');
+// Socket connection handled via getSocket utils
+
 
 // ==================== ANIMATION VARIANTS ====================
 const fadeInUp = {
@@ -411,7 +412,7 @@ const PaymentSettings = ({ showToast }) => {
     useEffect(() => {
         const fetchConfig = async () => {
             try {
-                const { data } = await axios.get('http://localhost:5000/api/config');
+                const { data } = await axios.get(`${config.API_URL}/api/config`);
                 setConfig(data);
             } catch (error) {
                 console.error(error);
@@ -427,7 +428,7 @@ const PaymentSettings = ({ showToast }) => {
     const handleSave = async (e) => {
         e.preventDefault();
         try {
-            await axios.put('http://localhost:5000/api/config', config);
+            await axios.put(`${config.API_URL}/api/config`, config);
             showToast('Payment settings updated successfully!', 'success');
         } catch (error) {
             console.error(error);
@@ -507,7 +508,7 @@ const OrderHistory = ({ showToast, getStatusColor, getPaymentStatusColor }) => {
             params.append('period', periodFilter);
             if (statusFilter !== 'all') params.append('status', statusFilter);
 
-            const { data } = await axios.get(`http://localhost:5000/api/orders/history?${params.toString()}`);
+            const { data } = await axios.get(`${config.API_URL}/api/orders/history?${params.toString()}`);
             setHistoryOrders(data);
         } catch (error) {
             console.error('Error fetching order history:', error);
@@ -520,7 +521,7 @@ const OrderHistory = ({ showToast, getStatusColor, getPaymentStatusColor }) => {
     const handleDeleteOrder = async (orderId) => {
         setDeleting(true);
         try {
-            await axios.delete(`http://localhost:5000/api/orders/${orderId}`);
+            await axios.delete(`${config.API_URL}/api/orders/${orderId}`);
             // Remove from local state immediately
             setHistoryOrders(prev => prev.filter(order => order._id !== orderId));
             setDeleteConfirm(null);
@@ -824,20 +825,24 @@ const AdminDashboard = () => {
         fetchOrders();
 
         // Socket.IO listeners for real-time updates
-        socket.on('new_order', (newOrder) => {
-            setOrders(prev => [newOrder, ...prev]);
-            showToast('🔔 New order received!', 'info');
-        });
+        const socket = getSocket();
 
-        socket.on('order_status_updated', (updatedOrder) => {
-            setOrders(prev => prev.map(order =>
-                order._id === updatedOrder._id ? updatedOrder : order
-            ));
-        });
+        if (socket) {
+            socket.on('new_order', (newOrder) => {
+                setOrders(prev => [newOrder, ...prev]);
+                showToast('🔔 New order received!', 'info');
+            });
 
-        socket.on('order_archived', ({ orderId }) => {
-            setOrders(prev => prev.filter(order => order._id !== orderId));
-        });
+            socket.on('order_status_updated', (updatedOrder) => {
+                setOrders(prev => prev.map(order =>
+                    order._id === updatedOrder._id ? updatedOrder : order
+                ));
+            });
+
+            socket.on('order_archived', ({ orderId }) => {
+                setOrders(prev => prev.filter(order => order._id !== orderId));
+            });
+        }
 
         // Auto-refresh every 30 seconds as fallback
         const refreshInterval = setInterval(() => {
@@ -845,9 +850,11 @@ const AdminDashboard = () => {
         }, 30000);
 
         return () => {
-            socket.off('new_order');
-            socket.off('order_status_updated');
-            socket.off('order_archived');
+            if (socket) {
+                socket.off('new_order');
+                socket.off('order_status_updated');
+                socket.off('order_archived');
+            }
             clearInterval(refreshInterval);
         };
     }, [showToast]);
@@ -855,7 +862,7 @@ const AdminDashboard = () => {
     const fetchFoods = async () => {
         setFoodsLoading(true);
         try {
-            const { data } = await axios.get('http://localhost:5000/api/food');
+            const { data } = await axios.get(`${config.API_URL}/api/food`);
             setFoods(data);
         } catch (error) {
             console.error('Error fetching foods:', error);
@@ -867,7 +874,7 @@ const AdminDashboard = () => {
     const fetchOrders = async () => {
         setOrdersLoading(true);
         try {
-            const { data } = await axios.get('http://localhost:5000/api/orders');
+            const { data } = await axios.get(`${config.API_URL}/api/orders`);
             setOrders(data);
         } catch (error) {
             console.error('Error fetching orders:', error);
@@ -885,7 +892,7 @@ const AdminDashboard = () => {
         try {
             const formDataUpload = new FormData();
             formDataUpload.append('image', file);
-            const { data } = await axios.post('http://localhost:5000/api/food/upload', formDataUpload, {
+            const { data } = await axios.post(`${config.API_URL}/api/food/upload`, formDataUpload, {
                 headers: { 'Content-Type': 'multipart/form-data' }
             });
             setFormData(prev => ({ ...prev, image: data.imageUrl }));
@@ -901,9 +908,8 @@ const AdminDashboard = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            await axios.post('http://localhost:5000/api/food', formData);
+            await axios.post(`${config.API_URL}/api/food`, formData);
             setShowAddModal(false);
-            fetchFoods();
             fetchFoods();
             setFormData({ name: '', description: '', price: '', category: '', type: 'veg', image: '', discountType: 'none', discountValue: 0 });
             showToast('Food item added successfully!', 'success');
@@ -921,8 +927,6 @@ const AdminDashboard = () => {
             price: food.price,
             category: food.category,
             type: food.type,
-            category: food.category,
-            type: food.type,
             image: food.image,
             discountType: food.discountType || 'none',
             discountValue: food.discountValue || 0
@@ -933,10 +937,8 @@ const AdminDashboard = () => {
     const handleEditSubmit = async (e) => {
         e.preventDefault();
         try {
-            await axios.put(`http://localhost:5000/api/food/${editingFood._id}`, formData);
+            await axios.put(`${config.API_URL}/api/food/${editingFood._id}`, formData);
             setShowEditModal(false);
-            setEditingFood(null);
-            fetchFoods();
             setEditingFood(null);
             fetchFoods();
             setFormData({ name: '', description: '', price: '', category: '', type: 'veg', image: '', discountType: 'none', discountValue: 0 });
@@ -950,7 +952,7 @@ const AdminDashboard = () => {
     const handleDelete = async (id) => {
         if (window.confirm('Are you sure you want to delete this item?')) {
             try {
-                await axios.delete(`http://localhost:5000/api/food/${id}`);
+                await axios.delete(`${config.API_URL}/api/food/${id}`);
                 fetchFoods();
                 showToast('Food item deleted!', 'success');
             } catch (error) {
@@ -962,7 +964,7 @@ const AdminDashboard = () => {
 
     const updateStatus = async (id, status) => {
         try {
-            await axios.put(`http://localhost:5000/api/orders/${id}/status`, { status });
+            await axios.put(`${config.API_URL}/api/orders/${id}/status`, { status });
             fetchOrders();
             showToast(`Order status updated to ${status}!`, 'success');
         } catch (error) {
@@ -975,7 +977,7 @@ const AdminDashboard = () => {
     const archiveOrder = async (orderId) => {
         setDeleting(true);
         try {
-            await axios.put(`http://localhost:5000/api/orders/${orderId}/archive`);
+            await axios.put(`${config.API_URL}/api/orders/${orderId}/archive`);
             setOrders(prev => prev.filter(order => order._id !== orderId));
             showToast('Order archived successfully! View in History tab.', 'success');
             setDeleteConfirm(null);

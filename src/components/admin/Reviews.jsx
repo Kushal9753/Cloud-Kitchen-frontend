@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import config from '../../config';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Star, MessageSquare, ThumbsUp, ThumbsDown, RefreshCw, Filter, Calendar } from 'lucide-react';
 
@@ -20,9 +21,9 @@ const Reviews = ({ showToast }) => {
         setLoading(true);
         try {
             const [reviewsRes, ratingsRes, statsRes] = await Promise.all([
-                axios.get(`http://localhost:5000/api/reviews/admin/all?sortBy=${sortBy}&rating=${filterRating !== 'all' ? filterRating : ''}`),
-                axios.get('http://localhost:5000/api/reviews/admin/dish-ratings'),
-                axios.get('http://localhost:5000/api/reviews/admin/stats')
+                axios.get(`${config.API_URL}/api/reviews/admin/all?sortBy=${sortBy}&rating=${filterRating !== 'all' ? filterRating : ''}`),
+                axios.get(`${config.API_URL}/api/reviews/admin/dish-ratings`),
+                axios.get(`${config.API_URL}/api/reviews/admin/stats`)
             ]);
 
             setReviews(reviewsRes.data);
