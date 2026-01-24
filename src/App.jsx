@@ -14,7 +14,7 @@ import Orders from './pages/Orders';
 import OrderSuccess from './pages/OrderSuccess';
 import AddressSelection from './pages/AddressSelection';
 import PaymentPage from './pages/PaymentPage';
-import PaymentPage from './pages/PaymentPage';
+
 import Profile from './pages/Profile';
 import NetworkDebugger from './components/NetworkDebugger';
 
