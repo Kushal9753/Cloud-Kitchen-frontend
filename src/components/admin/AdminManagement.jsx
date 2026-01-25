@@ -44,7 +44,7 @@ const AdminManagement = ({ showToast }) => {
 
         try {
             const { data } = await axios.get(
-                `http://localhost:5000/api/admin/admins`,
+                `${import.meta.env.VITE_API_URL}/admin/admins`,
                 { headers: { Authorization: `Bearer ${user.token}` } }
             );
             setAdmins(data);
@@ -77,7 +77,7 @@ const AdminManagement = ({ showToast }) => {
         setAddAdminLoading(true);
         try {
             const { data } = await axios.post(
-                `http://localhost:5000/api/admin/admins`,
+                `${import.meta.env.VITE_API_URL}/admin/admins`,
                 addAdminForm,
                 { headers: { Authorization: `Bearer ${user.token}` } }
             );
@@ -97,7 +97,7 @@ const AdminManagement = ({ showToast }) => {
         setDeleting(true);
         try {
             const { data } = await axios.delete(
-                `http://localhost:5000/api/admin/admins/${adminId}`,
+                `${import.meta.env.VITE_API_URL}/admin/admins/${adminId}`,
                 { headers: { Authorization: `Bearer ${user.token}` } }
             );
 
@@ -133,7 +133,7 @@ const AdminManagement = ({ showToast }) => {
         setChangePasswordLoading(true);
         try {
             const { data } = await axios.put(
-                `http://localhost:5000/api/admin/change-password`,
+                `${import.meta.env.VITE_API_URL}/admin/change-password`,
                 {
                     currentPassword: changePasswordForm.currentPassword,
                     newPassword: changePasswordForm.newPassword

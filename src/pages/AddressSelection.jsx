@@ -6,7 +6,7 @@ import axios from 'axios';
 // config import removed
 import { ArrowRight, MapPin, Phone, User, Plus, Check, Trash2, Home, Loader2 } from 'lucide-react';
 
-const API_URL = `http://localhost:5000/api`;
+const API_URL = import.meta.env.VITE_API_URL;
 
 const AddressSelection = () => {
     const navigate = useNavigate();

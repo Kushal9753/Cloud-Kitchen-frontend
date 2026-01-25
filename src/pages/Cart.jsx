@@ -43,7 +43,7 @@ const Cart = () => {
             if (cartItems.length === 0) return;
 
             try {
-                const { data } = await axios.post(`http://localhost:5000/api/delivery/calculate`, {
+                const { data } = await axios.post(`${import.meta.env.VITE_API_URL}/delivery/calculate`, {
                     orderValue: itemsPrice // Use discounted items price basis
                 });
 
@@ -66,7 +66,7 @@ const Cart = () => {
         setCouponError('');
 
         try {
-            const { data } = await axios.post(`http://localhost:5000/api/coupons/validate`, {
+            const { data } = await axios.post(`${import.meta.env.VITE_API_URL}/coupons/validate`, {
                 code: couponCode,
                 orderValue: itemsPrice
             });

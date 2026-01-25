@@ -5,7 +5,7 @@ let socket = null;
 export const getSocket = () => {
     if (!socket) {
         try {
-            socket = io('http://localhost:5000', {
+            socket = io(import.meta.env.VITE_API_ABSOLUTE_URL, {
                 transports: ['websocket', 'polling'],
                 reconnectionAttempts: 3,
                 timeout: 5000,

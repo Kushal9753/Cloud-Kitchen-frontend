@@ -8,7 +8,7 @@ import { QRCodeSVG } from 'qrcode.react';
 import { ShieldCheck, CreditCard, Smartphone, Building2, Wallet, Banknote, Check, Loader2, Tag, X, AlertCircle, CheckCircle2 } from 'lucide-react';
 import { clearCart } from '../features/cart/cartSlice';
 
-const API_URL = `http://localhost:5000/api`;
+const API_URL = import.meta.env.VITE_API_URL;
 
 const PaymentPage = () => {
     const navigate = useNavigate();

@@ -39,23 +39,23 @@ const Profile = () => {
             try {
                 switch (activeTab) {
                     case 'orders':
-                        const ordersRes = await axios.get(`http://localhost:5000/api/orders/myorders/${user._id}`);
+                        const ordersRes = await axios.get(`${import.meta.env.VITE_API_URL}/orders/myorders/${user._id}`);
                         setOrders(ordersRes.data);
                         break;
                     case 'addresses':
-                        const addressesRes = await axios.get(`http://localhost:5000/api/addresses`, {
+                        const addressesRes = await axios.get(`${import.meta.env.VITE_API_URL}/addresses`, {
                             headers: { Authorization: `Bearer ${user.token}` }
                         });
                         setAddresses(addressesRes.data);
                         break;
                     case 'payments':
-                        const paymentsRes = await axios.get(`http://localhost:5000/api/payments/history`, {
+                        const paymentsRes = await axios.get(`${import.meta.env.VITE_API_URL}/payments/history`, {
                             headers: { Authorization: `Bearer ${user.token}` }
                         });
                         setPayments(paymentsRes.data);
                         break;
                     case 'coupons':
-                        const couponsRes = await axios.get(`http://localhost:5000/api/coupons`);
+                        const couponsRes = await axios.get(`${import.meta.env.VITE_API_URL}/coupons`);
                         setCoupons(couponsRes.data);
                         break;
                 }

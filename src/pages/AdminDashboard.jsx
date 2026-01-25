@@ -412,7 +412,7 @@ const PaymentSettings = ({ showToast }) => {
     useEffect(() => {
         const fetchConfig = async () => {
             try {
-                const { data } = await axios.get(`http://localhost:5000/api/config`);
+                const { data } = await axios.get(`${import.meta.env.VITE_API_URL}/config`);
                 setConfig(data);
             } catch (error) {
                 console.error(error);
@@ -428,7 +428,7 @@ const PaymentSettings = ({ showToast }) => {
     const handleSave = async (e) => {
         e.preventDefault();
         try {
-            await axios.put(`http://localhost:5000/api/config`, config);
+            await axios.put(`${import.meta.env.VITE_API_URL}/config`, config);
             showToast('Payment settings updated successfully!', 'success');
         } catch (error) {
             console.error(error);
@@ -508,7 +508,7 @@ const OrderHistory = ({ showToast, getStatusColor, getPaymentStatusColor }) => {
             params.append('period', periodFilter);
             if (statusFilter !== 'all') params.append('status', statusFilter);
 
-            const { data } = await axios.get(`http://localhost:5000/api/orders/history?${params.toString()}`);
+            const { data } = await axios.get(`${import.meta.env.VITE_API_URL}/orders/history?${params.toString()}`);
             setHistoryOrders(data);
         } catch (error) {
             console.error('Error fetching order history:', error);
@@ -521,7 +521,7 @@ const OrderHistory = ({ showToast, getStatusColor, getPaymentStatusColor }) => {
     const handleDeleteOrder = async (orderId) => {
         setDeleting(true);
         try {
-            await axios.delete(`http://localhost:5000/api/orders/${orderId}`);
+            await axios.delete(`${import.meta.env.VITE_API_URL}/orders/${orderId}`);
             // Remove from local state immediately
             setHistoryOrders(prev => prev.filter(order => order._id !== orderId));
             setDeleteConfirm(null);
@@ -862,7 +862,7 @@ const AdminDashboard = () => {
     const fetchFoods = async () => {
         setFoodsLoading(true);
         try {
-            const { data } = await axios.get(`http://localhost:5000/api/food`);
+            const { data } = await axios.get(`${import.meta.env.VITE_API_URL}/food`);
             setFoods(data);
         } catch (error) {
             console.error('Error fetching foods:', error);
@@ -874,7 +874,7 @@ const AdminDashboard = () => {
     const fetchOrders = async () => {
         setOrdersLoading(true);
         try {
-            const { data } = await axios.get(`http://localhost:5000/api/orders`);
+            const { data } = await axios.get(`${import.meta.env.VITE_API_URL}/orders`);
             setOrders(data);
         } catch (error) {
             console.error('Error fetching orders:', error);
@@ -892,7 +892,7 @@ const AdminDashboard = () => {
         try {
             const formDataUpload = new FormData();
             formDataUpload.append('image', file);
-            const { data } = await axios.post(`http://localhost:5000/api/food/upload`, formDataUpload, {
+            const { data } = await axios.post(`${import.meta.env.VITE_API_URL}/food/upload`, formDataUpload, {
                 headers: { 'Content-Type': 'multipart/form-data' }
             });
             setFormData(prev => ({ ...prev, image: data.imageUrl }));
@@ -908,7 +908,7 @@ const AdminDashboard = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            await axios.post(`http://localhost:5000/api/food`, formData);
+            await axios.post(`${import.meta.env.VITE_API_URL}/food`, formData);
             setShowAddModal(false);
             fetchFoods();
             setFormData({ name: '', description: '', price: '', category: '', type: 'veg', image: '', discountType: 'none', discountValue: 0 });
@@ -937,7 +937,7 @@ const AdminDashboard = () => {
     const handleEditSubmit = async (e) => {
         e.preventDefault();
         try {
-            await axios.put(`http://localhost:5000/api/food/${editingFood._id}`, formData);
+            await axios.put(`${import.meta.env.VITE_API_URL}/food/${editingFood._id}`, formData);
             setShowEditModal(false);
             setEditingFood(null);
             fetchFoods();
@@ -952,7 +952,7 @@ const AdminDashboard = () => {
     const handleDelete = async (id) => {
         if (window.confirm('Are you sure you want to delete this item?')) {
             try {
-                await axios.delete(`http://localhost:5000/api/food/${id}`);
+                await axios.delete(`${import.meta.env.VITE_API_URL}/food/${id}`);
                 fetchFoods();
                 showToast('Food item deleted!', 'success');
             } catch (error) {
@@ -964,7 +964,7 @@ const AdminDashboard = () => {
 
     const updateStatus = async (id, status) => {
         try {
-            await axios.put(`http://localhost:5000/api/orders/${id}/status`, { status });
+            await axios.put(`${import.meta.env.VITE_API_URL}/orders/${id}/status`, { status });
             fetchOrders();
             showToast(`Order status updated to ${status}!`, 'success');
         } catch (error) {
@@ -977,7 +977,7 @@ const AdminDashboard = () => {
     const archiveOrder = async (orderId) => {
         setDeleting(true);
         try {
-            await axios.put(`http://localhost:5000/api/orders/${orderId}/archive`);
+            await axios.put(`${import.meta.env.VITE_API_URL}/orders/${orderId}/archive`);
             setOrders(prev => prev.filter(order => order._id !== orderId));
             showToast('Order archived successfully! View in History tab.', 'success');
             setDeleteConfirm(null);

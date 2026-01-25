@@ -27,7 +27,7 @@ const NotificationPanel = ({ userId }) => {
 
         setLoading(true);
         try {
-            const { data } = await axios.get(`http://localhost:5000/api/notifications`, {
+            const { data } = await axios.get(`${import.meta.env.VITE_API_URL}/notifications`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             setNotifications(data);
@@ -43,7 +43,7 @@ const NotificationPanel = ({ userId }) => {
         if (!token) return;
 
         try {
-            const { data } = await axios.get(`http://localhost:5000/api/notifications/unread-count`, {
+            const { data } = await axios.get(`${import.meta.env.VITE_API_URL}/notifications/unread-count`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             setUnreadCount(data.count);
@@ -58,7 +58,7 @@ const NotificationPanel = ({ userId }) => {
 
         try {
             await axios.put(
-                `http://localhost:5000/api/notifications/${notificationId}/read`,
+                `${import.meta.env.VITE_API_URL}/notifications/${notificationId}/read`,
                 {},
                 { headers: { Authorization: `Bearer ${token}` } }
             );
@@ -79,7 +79,7 @@ const NotificationPanel = ({ userId }) => {
 
         try {
             await axios.put(
-                `http://localhost:5000/api/notifications/read-all`,
+                `${import.meta.env.VITE_API_URL}/notifications/read-all`,
                 {},
                 { headers: { Authorization: `Bearer ${token}` } }
             );

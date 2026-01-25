@@ -21,9 +21,9 @@ const Reviews = ({ showToast }) => {
         setLoading(true);
         try {
             const [reviewsRes, ratingsRes, statsRes] = await Promise.all([
-                axios.get(`http://localhost:5000/api/reviews/admin/all?sortBy=${sortBy}&rating=${filterRating !== 'all' ? filterRating : ''}`),
-                axios.get(`http://localhost:5000/api/reviews/admin/dish-ratings`),
-                axios.get(`http://localhost:5000/api/reviews/admin/stats`)
+                axios.get(`${import.meta.env.VITE_API_URL}/reviews/admin/all?sortBy=${sortBy}&rating=${filterRating !== 'all' ? filterRating : ''}`),
+                axios.get(`${import.meta.env.VITE_API_URL}/reviews/admin/dish-ratings`),
+                axios.get(`${import.meta.env.VITE_API_URL}/reviews/admin/stats`)
             ]);
 
             setReviews(reviewsRes.data);

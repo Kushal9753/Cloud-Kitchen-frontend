@@ -16,7 +16,7 @@ const Orders = () => {
     useEffect(() => {
         const fetchOrders = async () => {
             try {
-                const { data } = await axios.get(`http://localhost:5000/api/orders/myorders/${user._id}`);
+                const { data } = await axios.get(`${import.meta.env.VITE_API_URL}/orders/myorders/${user._id}`);
                 setOrders(data);
             } catch (error) {
                 console.error('Error fetching orders:', error);
@@ -30,7 +30,7 @@ const Orders = () => {
     const handleDeleteOrder = async (orderId) => {
         setDeleting(true);
         try {
-            await axios.delete(`http://localhost:5000/api/orders/${orderId}`);
+            await axios.delete(`${import.meta.env.VITE_API_URL}/orders/${orderId}`);
             // Remove from local state immediately
             setOrders(prev => prev.filter(order => order._id !== orderId));
             setDeleteConfirm(null);

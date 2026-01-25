@@ -5,7 +5,7 @@ import axios from 'axios';
 // Async thunk for login
 export const login = createAsyncThunk('auth/login', async (userData, thunkAPI) => {
     try {
-        const response = await axios.post(`http://localhost:5000/api/auth/login`, userData);
+        const response = await axios.post(`${import.meta.env.VITE_API_URL}/auth/login`, userData);
         // if (response.data) {
         //     localStorage.setItem('user', JSON.stringify(response.data));
         // }
@@ -19,7 +19,7 @@ export const login = createAsyncThunk('auth/login', async (userData, thunkAPI) =
 // Async thunk for register
 export const register = createAsyncThunk('auth/register', async (userData, thunkAPI) => {
     try {
-        const response = await axios.post(`http://localhost:5000/api/auth/signup`, userData);
+        const response = await axios.post(`${import.meta.env.VITE_API_URL}/auth/signup`, userData);
         // if (response.data) {
         //     localStorage.setItem('user', JSON.stringify(response.data));
         // }
@@ -32,14 +32,14 @@ export const register = createAsyncThunk('auth/register', async (userData, thunk
 
 // Async thunk for logout
 export const logout = createAsyncThunk('auth/logout', async () => {
-    await axios.post(`http://localhost:5000/api/auth/logout`);
+    await axios.post(`${import.meta.env.VITE_API_URL}/auth/logout`);
     // localStorage.removeItem('user');
 });
 
 // Check auth status
 export const checkAuth = createAsyncThunk('auth/checkAuth', async (_, thunkAPI) => {
     try {
-        const response = await axios.get(`http://localhost:5000/api/auth/me`);
+        const response = await axios.get(`${import.meta.env.VITE_API_URL}/auth/me`);
         return response.data;
     } catch (error) {
         return thunkAPI.rejectWithValue(error.message);

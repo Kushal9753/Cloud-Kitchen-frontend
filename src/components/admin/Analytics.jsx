@@ -33,11 +33,11 @@ const Analytics = ({ showToast }) => {
         setLoading(true);
         try {
             const [dashboard, revenue, orders, foods, customers] = await Promise.all([
-                axios.get(`http://localhost:5000/api/analytics/dashboard`),
-                axios.get(`http://localhost:5000/api/analytics/revenue?period=${period}&days=${days}`),
-                axios.get(`http://localhost:5000/api/analytics/orders`),
-                axios.get(`http://localhost:5000/api/analytics/top-foods?limit=5`),
-                axios.get(`http://localhost:5000/api/analytics/top-customers?limit=5`)
+                axios.get(`${import.meta.env.VITE_API_URL}/analytics/dashboard`),
+                axios.get(`${import.meta.env.VITE_API_URL}/analytics/revenue?period=${period}&days=${days}`),
+                axios.get(`${import.meta.env.VITE_API_URL}/analytics/orders`),
+                axios.get(`${import.meta.env.VITE_API_URL}/analytics/top-foods?limit=5`),
+                axios.get(`${import.meta.env.VITE_API_URL}/analytics/top-customers?limit=5`)
             ]);
 
             setDashboardStats(dashboard.data);

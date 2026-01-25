@@ -163,7 +163,7 @@ const UserManagement = ({ showToast, user }) => {
     const fetchUsers = useCallback(async () => {
         setLoading(true);
         try {
-            const { data } = await axios.get(`http://localhost:5000/api/admin/users`);
+            const { data } = await axios.get(`${import.meta.env.VITE_API_URL}/admin/users`);
             setUsers(data);
         } catch (error) {
             console.error('Error fetching users:', error);
@@ -186,7 +186,7 @@ const UserManagement = ({ showToast, user }) => {
         setTogglingStatus(userId);
         try {
             const { data } = await axios.put(
-                `http://localhost:5000/api/admin/users/${userId}/status`,
+                `${import.meta.env.VITE_API_URL}/admin/users/${userId}/status`,
                 {}
             );
 
@@ -230,14 +230,14 @@ const UserManagement = ({ showToast, user }) => {
             if (recipients === 'all') {
                 // Broadcast to all
                 await axios.post(
-                    `http://localhost:5000/api/admin/notifications/broadcast`,
+                    `${import.meta.env.VITE_API_URL}/admin/notifications/broadcast`,
                     { message }
                 );
                 showToast('Broadcast sent to all users!', 'success');
             } else {
                 // Send to selected users
                 await axios.post(
-                    `http://localhost:5000/api/admin/notifications/send`,
+                    `${import.meta.env.VITE_API_URL}/admin/notifications/send`,
                     { message, userIds: recipients }
                 );
                 showToast(`Notification sent to ${recipients.length} user(s)!`, 'success');
