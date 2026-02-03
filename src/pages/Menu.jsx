@@ -32,21 +32,15 @@ const containerVariants = {
     }
 };
 
-// Card animation - Simplified (no 3D transforms)
+// Card animation - Simplified
 const cardVariants = {
-    hidden: { opacity: 0, y: 20 },
+    hidden: { opacity: 0, y: 10 },
     visible: {
         opacity: 1,
         y: 0,
-        transition: {
-            duration: 0.25,
-            ease: [0.22, 1, 0.36, 1]
-        }
+        transition: { duration: 0.2 }
     },
-    exit: {
-        opacity: 0,
-        transition: { duration: 0.15 }
-    }
+    exit: { opacity: 0 }
 };
 
 // Search bar animation - Simplified
@@ -120,22 +114,7 @@ const Menu = () => {
         });
     }, [foods, filter, searchQuery]);
 
-    // 3D tilt effect - disabled on mobile for performance
-    const handleMouseMove = useCallback((e) => {
-        if (isMobile) return;
-        const card = e.currentTarget;
-        const rect = card.getBoundingClientRect();
-        const x = (e.clientX - rect.left) / rect.width;
-        const y = (e.clientY - rect.top) / rect.height;
-        card.style.setProperty('--mouse-x', x.toFixed(2));
-        card.style.setProperty('--mouse-y', y.toFixed(2));
-    }, [isMobile]);
-
-    const handleMouseLeave = useCallback((e) => {
-        if (isMobile) return;
-        e.currentTarget.style.setProperty('--mouse-x', '0.5');
-        e.currentTarget.style.setProperty('--mouse-y', '0.5');
-    }, [isMobile]);
+    // Tilt effect removed for performance
 
     const handleClose = () => {
         navigate(-1);
@@ -298,10 +277,7 @@ const Menu = () => {
                                     variants={cardVariants}
                                     layout
                                     exit="exit"
-                                    className="menu-food-card group"
-                                    onMouseMove={handleMouseMove}
-                                    onMouseLeave={handleMouseLeave}
-                                    style={{ '--card-index': index }}
+                                    className="menu-food-card group hover:-translate-y-1 transition-transform duration-300"
                                 >
                                     {/* Image Container */}
                                     <div className="menu-card-image">
@@ -309,6 +285,7 @@ const Menu = () => {
                                             src={food.image}
                                             alt={food.name}
                                             loading="lazy"
+                                            decoding="async"
                                         />
                                         {/* Type Badge */}
                                         <span className={`menu-type-badge ${food.type}`}>

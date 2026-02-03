@@ -12,19 +12,16 @@ const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
         opacity: 1,
-        transition: { staggerChildren: 0.04 } // Faster stagger, less work
+        transition: { staggerChildren: 0.05 }
     }
 };
 
 const cardVariants = {
-    hidden: { opacity: 0, y: 20 }, // Smaller distance, no scale
+    hidden: { opacity: 0, y: 10 },
     visible: {
         opacity: 1,
         y: 0,
-        transition: {
-            duration: 0.3, // Simple duration instead of spring
-            ease: [0.22, 1, 0.36, 1] // Smooth ease-out
-        }
+        transition: { duration: 0.2 }
     }
 };
 
@@ -54,22 +51,7 @@ const Home = () => {
         fetchFoods();
     }, []);
 
-    // Cursor parallax handler - disabled on mobile for performance
-    const handleMouseMove = useCallback((e) => {
-        if (isMobile) return; // Skip on mobile
-        const card = e.currentTarget;
-        const rect = card.getBoundingClientRect();
-        const x = (e.clientX - rect.left) / rect.width;
-        const y = (e.clientY - rect.top) / rect.height;
-        card.style.setProperty('--mouse-x', x.toFixed(2));
-        card.style.setProperty('--mouse-y', y.toFixed(2));
-    }, [isMobile]);
-
-    const handleMouseLeave = useCallback((e) => {
-        if (isMobile) return; // Skip on mobile
-        e.currentTarget.style.setProperty('--mouse-x', '0.5');
-        e.currentTarget.style.setProperty('--mouse-y', '0.5');
-    }, [isMobile]);
+    // Tilt effect removed for performance
 
     // Filter foods
     const filteredFoods = foods.filter(food => {
@@ -286,17 +268,15 @@ const Home = () => {
                                     variants={cardVariants}
                                     layout
                                     exit={{ opacity: 0, scale: 0.9 }}
-                                    className="glass-card group"
-                                    style={{ '--stagger-delay': index % 8 }}
-                                    onMouseMove={handleMouseMove}
-                                    onMouseLeave={handleMouseLeave}
+                                    className="glass-card group hover:-translate-y-1 transition-transform duration-300"
                                 >
                                     {/* Image */}
                                     <div className="relative h-32 sm:h-48 overflow-hidden rounded-t-[12px] sm:rounded-t-[22px]">
                                         <img
                                             src={food.image}
                                             alt={food.name}
-                                            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                                            loading="lazy"
+                                            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                                         />
                                         {/* Type Badge */}
                                         <span className={`absolute top-2 right-2 sm:top-3 sm:right-3 px-2 py-1 sm:px-3 sm:py-1.5 rounded-full text-[10px] sm:text-xs font-bold uppercase backdrop-blur-md ${food.type === 'veg'
