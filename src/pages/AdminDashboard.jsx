@@ -12,12 +12,12 @@ import {
 } from 'lucide-react';
 import axios from 'axios';
 import { getSocket } from '../utils/socket';
+import { compressImage } from '../utils/imageUtils';
 // config import removed
 import Analytics from '../components/admin/Analytics';
 import Reviews from '../components/admin/Reviews';
 import UserManagement from '../components/admin/UserManagement';
 import CouponManagement from '../components/admin/CouponManagement';
-import AdminManagement from '../components/admin/AdminManagement';
 
 // Socket connection handled via getSocket utils
 
@@ -242,7 +242,6 @@ const Sidebar = ({ activeTab, setActiveTab, isCollapsed, setIsCollapsed, isMobil
         { id: 'analytics', label: 'Analytics', icon: TrendingUp },
         { id: 'reviews', label: 'Reviews', icon: Star },
         { id: 'coupons', label: 'Coupons', icon: Tag },
-        { id: 'admin-management', label: 'Admin Management', icon: User },
         { id: 'settings', label: 'Payment Settings', icon: Settings }
     ];
 
@@ -902,12 +901,21 @@ const AdminDashboard = () => {
 
     // Upload image to Cloudinary (called on submit)
     const uploadImageToCloudinary = async (file) => {
-        const formDataUpload = new FormData();
-        formDataUpload.append('image', file);
-        const { data } = await axios.post(`${import.meta.env.VITE_API_URL}/food/upload`, formDataUpload, {
-            headers: { 'Content-Type': 'multipart/form-data' }
-        });
-        return data.imageUrl;
+        try {
+            // Compress image before upload
+            const compressedFile = await compressImage(file);
+
+            const formDataUpload = new FormData();
+            formDataUpload.append('image', compressedFile);
+
+            const { data } = await axios.post(`${import.meta.env.VITE_API_URL}/food/upload`, formDataUpload, {
+                headers: { 'Content-Type': 'multipart/form-data' }
+            });
+            return data.imageUrl;
+        } catch (error) {
+            console.error("Upload/Compression error:", error);
+            throw error;
+        }
     };
 
     const handleSubmit = async (e) => {

@@ -43,15 +43,11 @@ const Profile = () => {
                         setOrders(ordersRes.data);
                         break;
                     case 'addresses':
-                        const addressesRes = await axios.get(`${import.meta.env.VITE_API_URL}/addresses`, {
-                            headers: { Authorization: `Bearer ${user.token}` }
-                        });
+                        const addressesRes = await axios.get(`${import.meta.env.VITE_API_URL}/addresses`);
                         setAddresses(addressesRes.data);
                         break;
                     case 'payments':
-                        const paymentsRes = await axios.get(`${import.meta.env.VITE_API_URL}/payments/history`, {
-                            headers: { Authorization: `Bearer ${user.token}` }
-                        });
+                        const paymentsRes = await axios.get(`${import.meta.env.VITE_API_URL}/payments/history`);
                         setPayments(paymentsRes.data);
                         break;
                     case 'coupons':

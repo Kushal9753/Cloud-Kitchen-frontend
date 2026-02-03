@@ -1,4 +1,5 @@
 import { createSlice } from '@reduxjs/toolkit';
+import { logout } from '../auth/authSlice';
 
 const cartItems = JSON.parse(localStorage.getItem('cartItems')) || [];
 const appliedCoupon = JSON.parse(localStorage.getItem('appliedCoupon')) || null;
@@ -151,6 +152,22 @@ export const cartSlice = createSlice({
             state.totalPrice = totals.totalPrice;
             localStorage.removeItem('appliedCoupon');
         }
+    },
+    extraReducers: (builder) => {
+        builder.addCase(logout.fulfilled, (state) => {
+            // Clear all cart state when user logs out
+            state.cartItems = [];
+            state.itemsPrice = 0;
+            state.originalTotal = 0;
+            state.deliveryFee = 0;
+            state.appliedCoupon = null;
+            state.discount = 0;
+            state.totalPrice = 0;
+            // Clear localStorage
+            localStorage.removeItem('cartItems');
+            localStorage.removeItem('appliedCoupon');
+            localStorage.removeItem('selectedAddress');
+        });
     },
 });
 

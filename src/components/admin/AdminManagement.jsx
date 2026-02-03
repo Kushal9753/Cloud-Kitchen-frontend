@@ -44,8 +44,7 @@ const AdminManagement = ({ showToast }) => {
 
         try {
             const { data } = await axios.get(
-                `${import.meta.env.VITE_API_URL}/admin/admins`,
-                { headers: { Authorization: `Bearer ${user.token}` } }
+                `${import.meta.env.VITE_API_URL}/admin/admins`
             );
             setAdmins(data);
         } catch (error) {
@@ -78,8 +77,7 @@ const AdminManagement = ({ showToast }) => {
         try {
             const { data } = await axios.post(
                 `${import.meta.env.VITE_API_URL}/admin/admins`,
-                addAdminForm,
-                { headers: { Authorization: `Bearer ${user.token}` } }
+                addAdminForm
             );
 
             showToast(data.message || 'Admin created successfully', 'success');
@@ -97,8 +95,7 @@ const AdminManagement = ({ showToast }) => {
         setDeleting(true);
         try {
             const { data } = await axios.delete(
-                `${import.meta.env.VITE_API_URL}/admin/admins/${adminId}`,
-                { headers: { Authorization: `Bearer ${user.token}` } }
+                `${import.meta.env.VITE_API_URL}/admin/admins/${adminId}`
             );
 
             showToast(data.message || 'Admin deleted successfully', 'success');
@@ -137,8 +134,7 @@ const AdminManagement = ({ showToast }) => {
                 {
                     currentPassword: changePasswordForm.currentPassword,
                     newPassword: changePasswordForm.newPassword
-                },
-                { headers: { Authorization: `Bearer ${user.token}` } }
+                }
             );
 
             showToast(data.message || 'Password changed successfully', 'success');

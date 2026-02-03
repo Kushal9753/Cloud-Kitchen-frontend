@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { getSocket } from '../../utils/socket';
 // config import removed
 import { motion, AnimatePresence } from 'framer-motion';
 import { Star, MessageSquare, ThumbsUp, ThumbsDown, RefreshCw, Filter, Calendar } from 'lucide-react';
@@ -39,6 +40,20 @@ const Reviews = ({ showToast }) => {
 
     useEffect(() => {
         fetchData();
+
+        const socket = getSocket();
+        if (socket) {
+            socket.on('new_rating', (newReview) => {
+                setReviews(prev => [newReview, ...prev]);
+                if (showToast) showToast('New review received! ⭐', 'success');
+                // Optionally refetch stats
+                // fetchData(); 
+            });
+        }
+
+        return () => {
+            if (socket) socket.off('new_rating');
+        };
     }, [sortBy, filterRating]);
 
     const renderStars = (rating) => {

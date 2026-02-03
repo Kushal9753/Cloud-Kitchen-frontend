@@ -33,15 +33,13 @@ const AddressSelection = () => {
     }, []);
 
     const fetchAddresses = async () => {
-        if (!user?.token) {
+        if (!user) {
             setLoading(false);
             return;
         }
 
         try {
-            const { data } = await axios.get(`${API_URL}/addresses`, {
-                headers: { Authorization: `Bearer ${user.token}` }
-            });
+            const { data } = await axios.get(`${API_URL}/addresses`);
             setAddresses(data);
 
             const defaultAddr = data.find(addr => addr.isDefault);
@@ -66,9 +64,7 @@ const AddressSelection = () => {
         setSaving(true);
 
         try {
-            const { data } = await axios.post(`${API_URL}/addresses`, formData, {
-                headers: { Authorization: `Bearer ${user.token}` }
-            });
+            const { data } = await axios.post(`${API_URL}/addresses`, formData);
 
             setAddresses([data, ...addresses]);
             setSelectedAddress(data._id);
@@ -88,9 +84,7 @@ const AddressSelection = () => {
         if (!window.confirm('Are you sure you want to delete this address?')) return;
 
         try {
-            await axios.delete(`${API_URL}/addresses/${addressId}`, {
-                headers: { Authorization: `Bearer ${user.token}` }
-            });
+            await axios.delete(`${API_URL}/addresses/${addressId}`);
 
             setAddresses(addresses.filter(addr => addr._id !== addressId));
             if (selectedAddress === addressId) {

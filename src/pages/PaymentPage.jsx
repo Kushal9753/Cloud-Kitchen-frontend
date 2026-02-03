@@ -131,7 +131,7 @@ const PaymentPage = () => {
             return;
         }
 
-        if (!user?.token) {
+        if (!user) {
             alert('Please login to continue');
             navigate('/login');
             return;
@@ -156,9 +156,7 @@ const PaymentPage = () => {
                 couponCode: appliedCoupon ? appliedCoupon.code : null
             };
 
-            const { data } = await axios.post(`${API_URL}/payments/process`, paymentData, {
-                headers: { Authorization: `Bearer ${user.token}` }
-            });
+            const { data } = await axios.post(`${API_URL}/payments/process`, paymentData);
 
 
 

@@ -50,7 +50,7 @@ const initialState = {
     user: null, // JSON.parse(localStorage.getItem('user')) || null,
     isError: false,
     isSuccess: false,
-    isLoading: false,
+    isLoading: true, // Start as true to prevent flash while checking auth on initial load
     message: '',
 };
 

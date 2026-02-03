@@ -3,8 +3,130 @@ import { useSelector } from 'react-redux';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
+import { getSocket } from '../utils/socket';
 // config import removed
-import { Clock, MapPin, Package, CheckCircle, Truck, ChefHat, ShoppingBag, ArrowRight, Trash2 } from 'lucide-react';
+import { Clock, MapPin, Package, CheckCircle, Truck, ChefHat, ShoppingBag, ArrowRight, Trash2, Star } from 'lucide-react';
+
+// ==================== STAR RATING COMPONENT ====================
+const StarRating = ({ rating, onRate, readOnly = false }) => {
+    return (
+        <div className="flex gap-1">
+            {[1, 2, 3, 4, 5].map((star) => (
+                <button
+                    key={star}
+                    onClick={() => !readOnly && onRate(star)}
+                    disabled={readOnly}
+                    type="button"
+                    className={`text-2xl transition-all ${star <= rating
+                        ? 'text-yellow-400'
+                        : 'text-gray-300 dark:text-gray-600'
+                        } ${!readOnly && 'hover:text-yellow-300 cursor-pointer hover:scale-110'}`}
+                >
+                    ★
+                </button>
+            ))}
+        </div>
+    );
+};
+
+// ==================== RATING MODAL ====================
+const RatingModal = ({ order, onClose, onSubmit }) => {
+    const [rating, setRating] = useState(0);
+    const [reviewText, setReviewText] = useState('');
+    const [isSubmitting, setIsSubmitting] = useState(false);
+
+    const handleSubmit = async () => {
+        if (rating === 0) {
+            alert('Please select a rating');
+            return;
+        }
+
+        setIsSubmitting(true);
+        await onSubmit(order._id, rating, reviewText);
+        setIsSubmitting(false);
+        onClose();
+    };
+
+    return (
+        <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+            onClick={onClose}
+        >
+            <motion.div
+                initial={{ scale: 0.9, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.9, opacity: 0 }}
+                onClick={(e) => e.stopPropagation()}
+                className="modal-content w-full max-w-md"
+            >
+                <div className="mb-6">
+                    <div className="flex items-center gap-3 mb-2">
+                        <div className="p-2 rounded-xl bg-yellow-100 dark:bg-yellow-900/30">
+                            <Star className="w-6 h-6 text-yellow-500" />
+                        </div>
+                        <h3 className="text-xl font-bold" style={{ color: 'var(--text-primary)' }}>
+                            Rate Your Order
+                        </h3>
+                    </div>
+                    <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
+                        Order {order.orderNumber || `#${order._id.substring(0, 8).toUpperCase()}`}
+                    </p>
+                </div>
+
+                <div className="mb-4">
+                    <p className="text-sm font-medium mb-3" style={{ color: 'var(--text-secondary)' }}>
+                        How was your experience?
+                    </p>
+                    <div className="flex justify-center">
+                        <StarRating rating={rating} onRate={setRating} />
+                    </div>
+                </div>
+
+                <div className="mb-6">
+                    <label className="block text-sm font-medium mb-2" style={{ color: 'var(--text-secondary)' }}>
+                        Review (Optional)
+                    </label>
+                    <textarea
+                        value={reviewText}
+                        onChange={(e) => setReviewText(e.target.value)}
+                        placeholder="Tell us about your experience..."
+                        className="w-full px-4 py-3 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all bg-white dark:bg-gray-800"
+                        style={{ color: 'var(--text-primary)' }}
+                        rows="4"
+                        maxLength="500"
+                    />
+                    <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>
+                        {reviewText.length}/500
+                    </p>
+                </div>
+
+                <div className="flex gap-3">
+                    <motion.button
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                        onClick={onClose}
+                        disabled={isSubmitting}
+                        className="flex-1 glass-btn px-4 py-3 rounded-xl font-semibold disabled:opacity-50"
+                    >
+                        Cancel
+                    </motion.button>
+                    <motion.button
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                        onClick={handleSubmit}
+                        disabled={isSubmitting || rating === 0}
+                        className="flex-1 px-4 py-3 bg-gradient-to-r from-yellow-500 to-amber-500 text-white rounded-xl font-semibold shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                        {isSubmitting ? 'Submitting...' : 'Submit Rating'}
+                    </motion.button>
+                </div>
+            </motion.div>
+        </motion.div>
+    );
+};
 
 const Orders = () => {
     const { user } = useSelector((state) => state.auth);
@@ -12,6 +134,7 @@ const Orders = () => {
     const [loading, setLoading] = useState(true);
     const [deleteConfirm, setDeleteConfirm] = useState(null); // Order ID to delete
     const [deleting, setDeleting] = useState(false);
+    const [ratingModal, setRatingModal] = useState(null); // Order to rate
 
     useEffect(() => {
         const fetchOrders = async () => {
@@ -27,6 +150,27 @@ const Orders = () => {
         if (user) fetchOrders();
     }, [user]);
 
+    // Socket.io for Real-time Updates
+    useEffect(() => {
+        const socket = getSocket();
+        if (!socket) return;
+
+        const handleStatusUpdate = (updatedOrder) => {
+            // Only update if it's one of my orders
+            setOrders(prevOrders =>
+                prevOrders.map(order =>
+                    order._id === updatedOrder._id ? { ...order, status: updatedOrder.status } : order
+                )
+            );
+        };
+
+        socket.on('order_status_updated', handleStatusUpdate);
+
+        return () => {
+            socket.off('order_status_updated', handleStatusUpdate);
+        };
+    }, []);
+
     const handleDeleteOrder = async (orderId) => {
         setDeleting(true);
         try {
@@ -39,6 +183,25 @@ const Orders = () => {
             alert('Failed to delete order');
         } finally {
             setDeleting(false);
+        }
+    };
+
+    const handleRateOrder = async (orderId, rating, reviewText) => {
+        try {
+            const { data } = await axios.post(
+                `${import.meta.env.VITE_API_URL}/orders/${orderId}/rate`,
+                { rating, reviewText }
+            );
+
+            // Update orders list with rated order
+            setOrders(prev => prev.map(order =>
+                order._id === orderId ? data.order : order
+            ));
+
+            alert('✅ Rating submitted successfully!');
+        } catch (error) {
+            console.error('Error rating order:', error);
+            alert(error.response?.data?.message || 'Failed to submit rating');
         }
     };
 
@@ -247,6 +410,49 @@ const Orders = () => {
                                         <span>Delivered</span>
                                     </div>
                                 </div>
+
+                                {/* Rating Section */}
+                                {order.status === 'Delivered' && !order.hasReview && (
+                                    <div className="px-4 md:px-5 pb-4 md:pb-5">
+                                        <motion.button
+                                            whileHover={{ scale: 1.02 }}
+                                            whileTap={{ scale: 0.98 }}
+                                            onClick={() => setRatingModal(order)}
+                                            className="w-full px-4 py-3 bg-gradient-to-r from-yellow-500 to-amber-500 text-white rounded-xl font-semibold shadow-lg flex items-center justify-center gap-2"
+                                        >
+                                            <Star className="w-4 h-4" fill="currentColor" />
+                                            Rate This Order
+                                        </motion.button>
+                                    </div>
+                                )}
+
+                                {order.hasReview && (
+                                    <div className="px-4 md:px-5 pb-4 md:pb-5">
+                                        <div className="p-4 glass rounded-xl">
+                                            <p className="text-sm font-semibold mb-2" style={{ color: 'var(--text-secondary)' }}>
+                                                Your Rating:
+                                            </p>
+                                            <div className="flex items-center gap-3 mb-2">
+                                                <StarRating rating={order.rating} readOnly />
+                                                <span className="text-sm font-bold" style={{ color: 'var(--text-primary)' }}>
+                                                    {order.rating}/5
+                                                </span>
+                                            </div>
+                                            {order.reviewText && (
+                                                <p className="text-sm italic" style={{ color: 'var(--text-muted)' }}>
+                                                    "{order.reviewText}"
+                                                </p>
+                                            )}
+                                            <p className="text-xs mt-2" style={{ color: 'var(--text-muted)' }}>
+                                                Rated on {new Date(order.ratedAt).toLocaleDateString('en-IN', {
+                                                    day: 'numeric',
+                                                    month: 'short',
+                                                    year: 'numeric'
+                                                })}
+                                            </p>
+                                        </div>
+                                    </div>
+                                )}
                             </motion.div>
                         ))}
                     </AnimatePresence>
@@ -304,6 +510,17 @@ const Orders = () => {
                             </div>
                         </motion.div>
                     </motion.div>
+                )}
+            </AnimatePresence>
+
+            {/* Rating Modal */}
+            <AnimatePresence>
+                {ratingModal && (
+                    <RatingModal
+                        order={ratingModal}
+                        onClose={() => setRatingModal(null)}
+                        onSubmit={handleRateOrder}
+                    />
                 )}
             </AnimatePresence>
         </div>

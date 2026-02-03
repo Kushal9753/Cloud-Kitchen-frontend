@@ -12,24 +12,10 @@ const NotificationPanel = ({ userId }) => {
     const [loading, setLoading] = useState(false);
     const panelRef = useRef(null);
 
-    const getToken = () => {
-        try {
-            const user = JSON.parse(localStorage.getItem('user'));
-            return user?.token;
-        } catch {
-            return null;
-        }
-    };
-
     const fetchNotifications = async () => {
-        const token = getToken();
-        if (!token) return;
-
         setLoading(true);
         try {
-            const { data } = await axios.get(`${import.meta.env.VITE_API_URL}/notifications`, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
+            const { data } = await axios.get(`${import.meta.env.VITE_API_URL}/notifications`);
             setNotifications(data);
         } catch (error) {
             console.error('Error fetching notifications:', error);
@@ -39,13 +25,8 @@ const NotificationPanel = ({ userId }) => {
     };
 
     const fetchUnreadCount = async () => {
-        const token = getToken();
-        if (!token) return;
-
         try {
-            const { data } = await axios.get(`${import.meta.env.VITE_API_URL}/notifications/unread-count`, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
+            const { data } = await axios.get(`${import.meta.env.VITE_API_URL}/notifications/unread-count`);
             setUnreadCount(data.count);
         } catch (error) {
             console.error('Error fetching unread count:', error);
@@ -53,14 +34,9 @@ const NotificationPanel = ({ userId }) => {
     };
 
     const markAsRead = async (notificationId) => {
-        const token = getToken();
-        if (!token) return;
-
         try {
             await axios.put(
-                `${import.meta.env.VITE_API_URL}/notifications/${notificationId}/read`,
-                {},
-                { headers: { Authorization: `Bearer ${token}` } }
+                `${import.meta.env.VITE_API_URL}/notifications/${notificationId}/read`
             );
 
             // Update local state
@@ -73,15 +49,30 @@ const NotificationPanel = ({ userId }) => {
         }
     };
 
-    const markAllAsRead = async () => {
-        const token = getToken();
-        if (!token) return;
+    const deleteNotification = async (notificationId, e) => {
+        e.stopPropagation();
+        try {
+            await axios.delete(
+                `${import.meta.env.VITE_API_URL}/notifications/${notificationId}`
+            );
 
+            // Remove from local state
+            setNotifications(prev => prev.filter(n => n._id !== notificationId));
+
+            // If it was unread, decrement count
+            const notification = notifications.find(n => n._id === notificationId);
+            if (notification && !notification.isRead) {
+                setUnreadCount(prev => Math.max(0, prev - 1));
+            }
+        } catch (error) {
+            console.error('Error deleting notification:', error);
+        }
+    };
+
+    const markAllAsRead = async () => {
         try {
             await axios.put(
-                `${import.meta.env.VITE_API_URL}/notifications/read-all`,
-                {},
-                { headers: { Authorization: `Bearer ${token}` } }
+                `${import.meta.env.VITE_API_URL}/notifications/read-all`
             );
 
             // Update local state
@@ -291,10 +282,20 @@ const NotificationPanel = ({ userId }) => {
                                                     </div>
                                                 </div>
 
-                                                {/* Read status */}
-                                                {notification.isRead && (
-                                                    <Check className="h-4 w-4 text-emerald-500 flex-shrink-0" />
-                                                )}
+                                                {/* Actions */}
+                                                <div className="flex flex-col items-end gap-2">
+                                                    {notification.isRead && (
+                                                        <Check className="h-4 w-4 text-emerald-500 flex-shrink-0" />
+                                                    )}
+
+                                                    <button
+                                                        onClick={(e) => deleteNotification(notification._id, e)}
+                                                        className="p-1.5 rounded-lg hover:bg-red-100 text-gray-400 hover:text-red-500 transition-colors"
+                                                        title="Delete notification"
+                                                    >
+                                                        <Trash2 className="h-4 w-4" />
+                                                    </button>
+                                                </div>
                                             </div>
                                         </motion.div>
                                     ))}
