@@ -154,7 +154,7 @@ const StatsCard = ({ title, value, icon: Icon, color }) => {
 };
 
 // ==================== IMAGE UPLOAD COMPONENT ====================
-const ImageUpload = ({ imageUrl, onImageChange, onImageUpload, isUploading }) => {
+const ImageUpload = ({ imageUrl, previewUrl, onFileSelect, isUploading }) => {
     const fileInputRef = useRef(null);
     const [dragOver, setDragOver] = useState(false);
 
@@ -163,20 +163,24 @@ const ImageUpload = ({ imageUrl, onImageChange, onImageUpload, isUploading }) =>
         setDragOver(false);
         const file = e.dataTransfer.files[0];
         if (file && file.type.startsWith('image/')) {
-            onImageUpload(file);
+            onFileSelect(file);
         }
     };
 
     const handleFileSelect = (e) => {
         const file = e.target.files[0];
         if (file) {
-            onImageUpload(file);
+            onFileSelect(file);
         }
     };
 
+    // Display preview URL if available, otherwise show the final Cloudinary URL
+    const displayUrl = previewUrl || imageUrl;
+
     return (
         <div className="space-y-2">
-            <label className="block text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>Dish Image</label>
+            <label className="block text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>Dish Image *</label>
+            <p className="text-xs text-gray-500 mb-2">Upload an image file (PNG, JPG, GIF up to 5MB)</p>
 
             {/* Drag & Drop Zone */}
             <div
@@ -193,16 +197,23 @@ const ImageUpload = ({ imageUrl, onImageChange, onImageUpload, isUploading }) =>
                     accept="image/*"
                     onChange={handleFileSelect}
                     className="hidden"
+                    required
                 />
 
                 {isUploading ? (
                     <div className="flex flex-col items-center gap-2">
                         <div className="w-8 h-8 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin" />
-                        <p className="text-sm text-gray-500">Uploading...</p>
+                        <p className="text-sm text-gray-500">Uploading to Cloudinary...</p>
                     </div>
-                ) : imageUrl ? (
+                ) : displayUrl ? (
                     <div className="flex flex-col items-center gap-3">
-                        <img src={imageUrl} alt="Preview" className="w-24 h-24 md:w-32 md:h-32 object-cover rounded-xl shadow-md" />
+                        <img src={displayUrl} alt="Preview" className="w-24 h-24 md:w-32 md:h-32 object-cover rounded-xl shadow-md" />
+                        {previewUrl && (
+                            <p className="text-xs text-amber-600 font-medium">📁 Preview - Will upload on submit</p>
+                        )}
+                        {!previewUrl && imageUrl && (
+                            <p className="text-xs text-emerald-600 font-medium">✅ Cloudinary Image</p>
+                        )}
                         <p className="text-xs text-gray-500">Click or drag to change</p>
                     </div>
                 ) : (
@@ -217,21 +228,6 @@ const ImageUpload = ({ imageUrl, onImageChange, onImageUpload, isUploading }) =>
                     </div>
                 )}
             </div>
-
-            {/* URL Input Alternative */}
-            <div className="flex items-center gap-2 mt-2">
-                <div className="flex-1 h-px bg-gray-200" />
-                <span className="text-xs text-gray-400 px-2">or paste URL</span>
-                <div className="flex-1 h-px bg-gray-200" />
-            </div>
-            <input
-                type="text"
-                name="image"
-                placeholder="https://example.com/image.jpg"
-                value={imageUrl}
-                onChange={onImageChange}
-                className="w-full px-4 py-2 text-sm border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all"
-            />
         </div>
     );
 };
@@ -782,6 +778,8 @@ const AdminDashboard = () => {
         discountType: 'none', discountValue: 0
     });
     const [isUploading, setIsUploading] = useState(false);
+    const [imageFile, setImageFile] = useState(null); // Store selected file
+    const [imagePreviewUrl, setImagePreviewUrl] = useState(''); // Temporary preview URL
 
     // State for Orders
     const [orders, setOrders] = useState([]);
@@ -885,37 +883,63 @@ const AdminDashboard = () => {
 
     const handleInputChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
+        // Clear file preview if URL is manually entered
+        if (e.target.name === 'image') {
+            setImageFile(null);
+            setImagePreviewUrl('');
+        }
     };
 
-    const handleImageUpload = async (file) => {
-        setIsUploading(true);
-        try {
-            const formDataUpload = new FormData();
-            formDataUpload.append('image', file);
-            const { data } = await axios.post(`${import.meta.env.VITE_API_URL}/food/upload`, formDataUpload, {
-                headers: { 'Content-Type': 'multipart/form-data' }
-            });
-            setFormData(prev => ({ ...prev, image: data.imageUrl }));
-            showToast('Image uploaded successfully!', 'success');
-        } catch (error) {
-            console.error('Error uploading image:', error);
-            showToast('Failed to upload image', 'error');
-        } finally {
-            setIsUploading(false);
-        }
+    // Handle file selection - show preview immediately
+    const handleFileSelect = (file) => {
+        setImageFile(file);
+        // Create temporary preview URL
+        const previewUrl = URL.createObjectURL(file);
+        setImagePreviewUrl(previewUrl);
+        // Clear any manually entered URL
+        setFormData(prev => ({ ...prev, image: '' }));
+    };
+
+    // Upload image to Cloudinary (called on submit)
+    const uploadImageToCloudinary = async (file) => {
+        const formDataUpload = new FormData();
+        formDataUpload.append('image', file);
+        const { data } = await axios.post(`${import.meta.env.VITE_API_URL}/food/upload`, formDataUpload, {
+            headers: { 'Content-Type': 'multipart/form-data' }
+        });
+        return data.imageUrl;
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            await axios.post(`${import.meta.env.VITE_API_URL}/food`, formData);
+            let finalImageUrl = formData.image;
+
+            // If user selected a file, upload it to Cloudinary first
+            if (imageFile) {
+                setIsUploading(true);
+                finalImageUrl = await uploadImageToCloudinary(imageFile);
+            }
+
+            // Save food item with Cloudinary URL
+            await axios.post(`${import.meta.env.VITE_API_URL}/food`, {
+                ...formData,
+                image: finalImageUrl
+            });
+
+            // Cleanup
             setShowAddModal(false);
             fetchFoods();
             setFormData({ name: '', description: '', price: '', category: '', type: 'veg', image: '', discountType: 'none', discountValue: 0 });
+            setImageFile(null);
+            if (imagePreviewUrl) URL.revokeObjectURL(imagePreviewUrl);
+            setImagePreviewUrl('');
             showToast('Food item added successfully!', 'success');
         } catch (error) {
             console.error('Error adding food:', error);
             showToast('Failed to add food item', 'error');
+        } finally {
+            setIsUploading(false);
         }
     };
 
@@ -931,21 +955,62 @@ const AdminDashboard = () => {
             discountType: food.discountType || 'none',
             discountValue: food.discountValue || 0
         });
+        // Clear any previous file selection
+        setImageFile(null);
+        if (imagePreviewUrl) URL.revokeObjectURL(imagePreviewUrl);
+        setImagePreviewUrl('');
         setShowEditModal(true);
+    };
+
+    // Cleanup function for modals
+    const handleCloseAddModal = () => {
+        setShowAddModal(false);
+        setFormData({ name: '', description: '', price: '', category: '', type: 'veg', image: '', discountType: 'none', discountValue: 0 });
+        setImageFile(null);
+        if (imagePreviewUrl) URL.revokeObjectURL(imagePreviewUrl);
+        setImagePreviewUrl('');
+    };
+
+    const handleCloseEditModal = () => {
+        setShowEditModal(false);
+        setEditingFood(null);
+        setFormData({ name: '', description: '', price: '', category: '', type: 'veg', image: '', discountType: 'none', discountValue: 0 });
+        setImageFile(null);
+        if (imagePreviewUrl) URL.revokeObjectURL(imagePreviewUrl);
+        setImagePreviewUrl('');
     };
 
     const handleEditSubmit = async (e) => {
         e.preventDefault();
         try {
-            await axios.put(`${import.meta.env.VITE_API_URL}/food/${editingFood._id}`, formData);
+            let finalImageUrl = formData.image;
+
+            // If user selected a new file, upload it to Cloudinary first
+            if (imageFile) {
+                setIsUploading(true);
+                finalImageUrl = await uploadImageToCloudinary(imageFile);
+            }
+
+            // Update food item with Cloudinary URL
+            await axios.put(`${import.meta.env.VITE_API_URL}/food/${editingFood._id}`, {
+                ...formData,
+                image: finalImageUrl
+            });
+
+            // Cleanup
             setShowEditModal(false);
             setEditingFood(null);
             fetchFoods();
             setFormData({ name: '', description: '', price: '', category: '', type: 'veg', image: '', discountType: 'none', discountValue: 0 });
+            setImageFile(null);
+            if (imagePreviewUrl) URL.revokeObjectURL(imagePreviewUrl);
+            setImagePreviewUrl('');
             showToast('Food item updated successfully!', 'success');
         } catch (error) {
             console.error('Error updating food:', error);
             showToast('Failed to update food item', 'error');
+        } finally {
+            setIsUploading(false);
         }
     };
 
@@ -1078,8 +1143,8 @@ const AdminDashboard = () => {
             {/* Image Upload Component */}
             <ImageUpload
                 imageUrl={formData.image}
-                onImageChange={handleInputChange}
-                onImageUpload={handleImageUpload}
+                previewUrl={imagePreviewUrl}
+                onFileSelect={handleFileSelect}
                 isUploading={isUploading}
             />
 
@@ -1680,12 +1745,12 @@ const AdminDashboard = () => {
             </div >
 
             {/* Add Food Modal */}
-            < Modal isOpen={showAddModal} onClose={() => setShowAddModal(false)} title="Add New Dish" >
+            <Modal isOpen={showAddModal} onClose={handleCloseAddModal} title="Add New Dish" >
                 {renderForm(handleSubmit)}
-            </Modal >
+            </Modal>
 
             {/* Edit Food Modal */}
-            < Modal isOpen={showEditModal} onClose={() => { setShowEditModal(false); setEditingFood(null); }} title="Edit Dish" >
+            <Modal isOpen={showEditModal} onClose={handleCloseEditModal} title="Edit Dish" >
                 {renderForm(handleEditSubmit, true)}
             </Modal >
 
