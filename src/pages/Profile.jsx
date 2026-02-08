@@ -104,7 +104,7 @@ const Profile = () => {
                 >
                     <div className="flex items-center gap-4">
                         <div className="w-16 h-16 rounded-full bg-gradient-to-r from-emerald-500 to-teal-500 flex items-center justify-center text-white text-2xl font-bold">
-                            {user.name?.charAt(0).toUpperCase()}
+                            {user.name ? user.name.charAt(0).toUpperCase() : 'U'}
                         </div>
                         <div>
                             <h1 className="text-2xl font-bold" style={{ color: 'var(--text-primary)' }}>

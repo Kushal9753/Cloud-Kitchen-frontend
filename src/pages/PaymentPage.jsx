@@ -42,9 +42,6 @@ const PaymentPage = () => {
 
     const paymentMethods = [
         { id: 'UPI', name: 'UPI', icon: Smartphone, description: 'GPay, PhonePe, Paytm' },
-        { id: 'Card', name: 'Debit/Credit Card', icon: CreditCard, description: 'Visa, Mastercard, RuPay' },
-        { id: 'NetBanking', name: 'Net Banking', icon: Building2, description: 'All major banks' },
-        { id: 'Wallet', name: 'Wallet', icon: Wallet, description: 'Paytm, Amazon Pay' },
         { id: 'COD', name: 'Cash on Delivery', icon: Banknote, description: 'Pay when you receive' }
     ];
 
@@ -426,45 +423,7 @@ const PaymentPage = () => {
                             <h2 className="text-lg font-bold" style={{ color: 'var(--text-primary)' }}>Payment Method</h2>
                         </div>
 
-                        <div className="space-y-3 mb-6">
-                            {paymentMethods.map((method, index) => (
-                                <motion.div
-                                    key={method.id}
-                                    initial={{ opacity: 0, x: 20 }}
-                                    animate={{ opacity: 1, x: 0 }}
-                                    transition={{ delay: 0.4 + index * 0.05 }}
-                                    onClick={() => setSelectedMethod(method.id)}
-                                    className={`p-4 rounded-xl cursor-pointer transition-all glass ${selectedMethod === method.id
-                                        ? 'ring-2 ring-emerald-500'
-                                        : ''
-                                        }`}
-                                >
-                                    <div className="flex items-center justify-between">
-                                        <div className="flex items-center gap-3">
-                                            <div className={`p-2.5 rounded-xl ${selectedMethod === method.id
-                                                ? 'glass-btn-primary'
-                                                : 'glass'
-                                                }`}>
-                                                <method.icon className={`w-5 h-5 ${selectedMethod === method.id ? 'text-white' : ''
-                                                    }`} style={{ color: selectedMethod !== method.id ? 'var(--text-muted)' : undefined }} />
-                                            </div>
-                                            <div>
-                                                <p className="font-medium" style={{ color: 'var(--text-primary)' }}>{method.name}</p>
-                                                <p className="text-xs" style={{ color: 'var(--text-muted)' }}>{method.description}</p>
-                                            </div>
-                                        </div>
-                                        <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${selectedMethod === method.id
-                                            ? 'border-emerald-500 bg-emerald-500'
-                                            : 'border-gray-300'
-                                            }`}>
-                                            {selectedMethod === method.id && <Check className="w-3 h-3 text-white" />}
-                                        </div>
-                                    </div>
-                                </motion.div>
-                            ))}
-                        </div>
-
-                        {/* UPI QR Code Section */}
+                        {/* UPI QR Code Section - Moved to top for better visibility */}
                         <AnimatePresence>
                             {selectedMethod === 'UPI' && paymentConfig.upiId && paymentConfig.receiverName && (
                                 <motion.div
@@ -524,6 +483,44 @@ const PaymentPage = () => {
                                 </motion.div>
                             )}
                         </AnimatePresence>
+
+                        <div className="space-y-3 mb-6">
+                            {paymentMethods.map((method, index) => (
+                                <motion.div
+                                    key={method.id}
+                                    initial={{ opacity: 0, x: 20 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    transition={{ delay: 0.4 + index * 0.05 }}
+                                    onClick={() => setSelectedMethod(method.id)}
+                                    className={`p-4 rounded-xl cursor-pointer transition-all glass ${selectedMethod === method.id
+                                        ? 'ring-2 ring-emerald-500'
+                                        : ''
+                                        }`}
+                                >
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex items-center gap-3">
+                                            <div className={`p-2.5 rounded-xl ${selectedMethod === method.id
+                                                ? 'glass-btn-primary'
+                                                : 'glass'
+                                                }`}>
+                                                <method.icon className={`w-5 h-5 ${selectedMethod === method.id ? 'text-white' : ''
+                                                    }`} style={{ color: selectedMethod !== method.id ? 'var(--text-muted)' : undefined }} />
+                                            </div>
+                                            <div>
+                                                <p className="font-medium" style={{ color: 'var(--text-primary)' }}>{method.name}</p>
+                                                <p className="text-xs" style={{ color: 'var(--text-muted)' }}>{method.description}</p>
+                                            </div>
+                                        </div>
+                                        <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${selectedMethod === method.id
+                                            ? 'border-emerald-500 bg-emerald-500'
+                                            : 'border-gray-300'
+                                            }`}>
+                                            {selectedMethod === method.id && <Check className="w-3 h-3 text-white" />}
+                                        </div>
+                                    </div>
+                                </motion.div>
+                            ))}
+                        </div>
 
                         {/* Demo Notice */}
                         <div className="glass rounded-xl p-4 mb-6 flex items-start gap-3" style={{ background: 'rgba(59, 130, 246, 0.1)' }}>

@@ -32,21 +32,36 @@ const Analytics = ({ showToast }) => {
     const fetchAllData = async () => {
         setLoading(true);
         try {
+            console.log('Fetching analytics data...');
+            console.log('API URL:', import.meta.env.VITE_API_URL);
+
+            const axiosConfig = {
+                withCredentials: true
+            };
+
             const [dashboard, revenue, orders, foods, customers] = await Promise.all([
-                axios.get(`${import.meta.env.VITE_API_URL}/analytics/dashboard`),
-                axios.get(`${import.meta.env.VITE_API_URL}/analytics/revenue?period=${period}&days=${days}`),
-                axios.get(`${import.meta.env.VITE_API_URL}/analytics/orders`),
-                axios.get(`${import.meta.env.VITE_API_URL}/analytics/top-foods?limit=5`),
-                axios.get(`${import.meta.env.VITE_API_URL}/analytics/top-customers?limit=5`)
+                axios.get(`${import.meta.env.VITE_API_URL}/analytics/dashboard`, axiosConfig),
+                axios.get(`${import.meta.env.VITE_API_URL}/analytics/revenue?period=${period}&days=${days}`, axiosConfig),
+                axios.get(`${import.meta.env.VITE_API_URL}/analytics/orders`, axiosConfig),
+                axios.get(`${import.meta.env.VITE_API_URL}/analytics/top-foods?limit=5`, axiosConfig),
+                axios.get(`${import.meta.env.VITE_API_URL}/analytics/top-customers?limit=5`, axiosConfig)
             ]);
 
+            console.log('✅ Dashboard data:', dashboard.data);
+            console.log('✅ Revenue data (length):', revenue.data?.length || 0);
+            console.log('✅ Order stats:', orders.data);
+            console.log('✅ Top foods (length):', foods.data?.length || 0);
+            console.log('✅ Top customers (length):', customers.data?.length || 0);
+
             setDashboardStats(dashboard.data);
-            setRevenueData(revenue.data);
+            setRevenueData(revenue.data || []);
             setOrderStats(orders.data);
-            setTopFoods(foods.data);
-            setTopCustomers(customers.data);
+            setTopFoods(foods.data || []);
+            setTopCustomers(customers.data || []);
         } catch (error) {
-            console.error('Error fetching analytics:', error);
+            console.error('❌ Error fetching analytics:', error);
+            console.error('❌ Error response:', error.response?.data);
+            console.error('❌ Error status:', error.response?.status);
             showToast('Failed to load analytics', 'error');
         } finally {
             setLoading(false);
@@ -310,21 +325,33 @@ const Analytics = ({ showToast }) => {
                         ))}
                     </div>
                 </div>
-                <ResponsiveContainer width="100%" height={300}>
-                    <AreaChart data={revenueData}>
-                        <defs>
-                            <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
-                                <stop offset="5%" stopColor="#10B981" stopOpacity={0.3} />
-                                <stop offset="95%" stopColor="#10B981" stopOpacity={0} />
-                            </linearGradient>
-                        </defs>
-                        <CartesianGrid strokeDasharray="3 3" stroke="var(--glass-border)" />
-                        <XAxis dataKey="date" stroke="var(--text-muted)" fontSize={12} />
-                        <YAxis stroke="var(--text-muted)" fontSize={12} tickFormatter={(v) => `₹${v}`} />
-                        <Tooltip content={<CustomTooltip />} />
-                        <Area type="monotone" dataKey="revenue" stroke="#10B981" strokeWidth={2} fill="url(#colorRevenue)" name="Revenue" />
-                    </AreaChart>
-                </ResponsiveContainer>
+                {revenueData && revenueData.length > 0 ? (
+                    <div style={{ width: '100%', height: '300px' }}>
+                        <ResponsiveContainer width="100%" height="100%">
+                            <AreaChart data={revenueData}>
+                                <defs>
+                                    <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
+                                        <stop offset="5%" stopColor="#10B981" stopOpacity={0.3} />
+                                        <stop offset="95%" stopColor="#10B981" stopOpacity={0} />
+                                    </linearGradient>
+                                </defs>
+                                <CartesianGrid strokeDasharray="3 3" stroke="var(--glass-border)" />
+                                <XAxis dataKey="date" stroke="var(--text-muted)" fontSize={12} />
+                                <YAxis stroke="var(--text-muted)" fontSize={12} tickFormatter={(v) => `₹${v}`} />
+                                <Tooltip content={<CustomTooltip />} />
+                                <Area type="monotone" dataKey="revenue" stroke="#10B981" strokeWidth={2} fill="url(#colorRevenue)" name="Revenue" />
+                            </AreaChart>
+                        </ResponsiveContainer>
+                    </div>
+                ) : (
+                    <div className="h-64 flex items-center justify-center" style={{ color: 'var(--text-muted)' }}>
+                        <div className="text-center">
+                            <TrendingUp className="h-12 w-12 mx-auto mb-2 opacity-30" />
+                            <p>No revenue data available yet</p>
+                            <p className="text-sm mt-1">Place some orders to see analytics</p>
+                        </div>
+                    </div>
+                )}
             </div>
 
             {/* Charts Grid */}
@@ -332,25 +359,27 @@ const Analytics = ({ showToast }) => {
                 {/* Order Status Pie */}
                 <div className="glass-card p-4 md:p-6 rounded-xl">
                     <h3 className="font-bold mb-4" style={{ color: 'var(--text-primary)' }}>Order Status Distribution</h3>
-                    <ResponsiveContainer width="100%" height={250}>
-                        <PieChart>
-                            <Pie
-                                data={orderStatusData}
-                                cx="50%"
-                                cy="50%"
-                                innerRadius={60}
-                                outerRadius={90}
-                                paddingAngle={5}
-                                dataKey="value"
-                                label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                            >
-                                {orderStatusData.map((entry, index) => (
-                                    <Cell key={entry.name} fill={COLORS[index % COLORS.length]} />
-                                ))}
-                            </Pie>
-                            <Tooltip />
-                        </PieChart>
-                    </ResponsiveContainer>
+                    <div style={{ width: '100%', height: '250px' }}>
+                        <ResponsiveContainer width="100%" height="100%">
+                            <PieChart>
+                                <Pie
+                                    data={orderStatusData}
+                                    cx="50%"
+                                    cy="50%"
+                                    innerRadius={60}
+                                    outerRadius={90}
+                                    paddingAngle={5}
+                                    dataKey="value"
+                                    label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                                >
+                                    {orderStatusData.map((entry, index) => (
+                                        <Cell key={entry.name} fill={COLORS[index % COLORS.length]} />
+                                    ))}
+                                </Pie>
+                                <Tooltip />
+                            </PieChart>
+                        </ResponsiveContainer>
+                    </div>
                     <div className="flex flex-wrap justify-center gap-2 mt-2">
                         {orderStatusData.map((entry, index) => (
                             <span key={entry.name} className="flex items-center gap-1 text-xs">
@@ -364,15 +393,17 @@ const Analytics = ({ showToast }) => {
                 {/* Top Foods Bar */}
                 <div className="glass-card p-4 md:p-6 rounded-xl">
                     <h3 className="font-bold mb-4" style={{ color: 'var(--text-primary)' }}>Top Selling Items</h3>
-                    <ResponsiveContainer width="100%" height={250}>
-                        <BarChart data={topFoods} layout="vertical">
-                            <CartesianGrid strokeDasharray="3 3" stroke="var(--glass-border)" />
-                            <XAxis type="number" stroke="var(--text-muted)" fontSize={12} />
-                            <YAxis dataKey="name" type="category" width={100} stroke="var(--text-muted)" fontSize={11} />
-                            <Tooltip formatter={(value) => [`${value} sold`, 'Quantity']} />
-                            <Bar dataKey="totalQuantity" fill="#3B82F6" radius={[0, 4, 4, 0]} />
-                        </BarChart>
-                    </ResponsiveContainer>
+                    <div style={{ width: '100%', height: '250px' }}>
+                        <ResponsiveContainer width="100%" height="100%">
+                            <BarChart data={topFoods} layout="vertical">
+                                <CartesianGrid strokeDasharray="3 3" stroke="var(--glass-border)" />
+                                <XAxis type="number" stroke="var(--text-muted)" fontSize={12} />
+                                <YAxis dataKey="name" type="category" width={100} stroke="var(--text-muted)" fontSize={11} />
+                                <Tooltip formatter={(value) => [`${value} sold`, 'Quantity']} />
+                                <Bar dataKey="totalQuantity" fill="#3B82F6" radius={[0, 4, 4, 0]} />
+                            </BarChart>
+                        </ResponsiveContainer>
+                    </div>
                 </div>
             </div>
 

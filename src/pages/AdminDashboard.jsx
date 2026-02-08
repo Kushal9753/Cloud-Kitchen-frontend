@@ -287,10 +287,10 @@ const Sidebar = ({ activeTab, setActiveTab, isCollapsed, setIsCollapsed, isMobil
             )}
 
             <motion.aside
-                initial={false}
+                initial={{ x: isMobile ? -300 : 0 }}
                 animate={{
                     width: isMobile ? 280 : (isCollapsed ? 80 : 280),
-                    x: isMobile && isCollapsed ? -280 : 0
+                    x: isMobile ? (isCollapsed ? -300 : 0) : 0
                 }}
                 transition={{ duration: 0.3, ease: "easeInOut" }}
                 className={`glass-card shadow-xl rounded-2xl overflow-hidden flex flex-col ${isMobile ? 'fixed left-4 top-4 bottom-4 z-50' : 'h-full'
@@ -324,7 +324,7 @@ const Sidebar = ({ activeTab, setActiveTab, isCollapsed, setIsCollapsed, isMobil
                 </div>
 
                 {/* Menu Items */}
-                <nav className="flex-1 p-4 space-y-2">
+                <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
                     {menuItems.map((item) => {
                         const Icon = item.icon;
                         const isActive = activeTab === item.id;
@@ -817,6 +817,13 @@ const AdminDashboard = () => {
         setToasts(prev => prev.filter(t => t.id !== id));
     }, []);
 
+    // Use ref to avoid re-render loops with socket listeners
+    const showToastRef = useRef(showToast);
+
+    useEffect(() => {
+        showToastRef.current = showToast;
+    }, [showToast]);
+
     useEffect(() => {
         fetchFoods();
         fetchOrders();
@@ -825,36 +832,61 @@ const AdminDashboard = () => {
         const socket = getSocket();
 
         if (socket) {
-            socket.on('new_order', (newOrder) => {
-                setOrders(prev => [newOrder, ...prev]);
-                showToast('🔔 New order received!', 'info');
-            });
+            // Handler for new orders with error handling
+            const handleNewOrder = (data) => {
+                try {
+                    if (data && data._id) {
+                        setOrders(prev => [data, ...prev]);
+                        showToastRef.current('🔔 New order received!', 'info');
+                    } else {
+                        console.warn('Received invalid new_order data:', data);
+                    }
+                } catch (error) {
+                    console.error('Error handling new order:', error);
+                }
+            };
 
-            socket.on('order_status_updated', (updatedOrder) => {
-                setOrders(prev => prev.map(order =>
-                    order._id === updatedOrder._id ? updatedOrder : order
-                ));
-            });
+            // Handler for order status updates with error handling
+            const handleOrderStatusUpdate = (data) => {
+                try {
+                    if (data && data._id) {
+                        setOrders(prev => prev.map(order =>
+                            order._id === data._id ? data : order
+                        ));
+                    } else {
+                        console.warn('Received invalid order_status_updated data:', data);
+                    }
+                } catch (error) {
+                    console.error('Error handling order status update:', error);
+                }
+            };
 
-            socket.on('order_archived', ({ orderId }) => {
-                setOrders(prev => prev.filter(order => order._id !== orderId));
-            });
+            // Handler for order archival with error handling
+            const handleOrderArchived = (data) => {
+                try {
+                    if (data && data.orderId) {
+                        setOrders(prev => prev.filter(order => order._id !== data.orderId));
+                    } else {
+                        console.warn('Received invalid order_archived data:', data);
+                    }
+                } catch (error) {
+                    console.error('Error handling order archive:', error);
+                }
+            };
+
+            socket.on('new_order', handleNewOrder);
+            socket.on('order_status_updated', handleOrderStatusUpdate);
+            socket.on('order_archived', handleOrderArchived);
+
+            return () => {
+                socket.off('new_order', handleNewOrder);
+                socket.off('order_status_updated', handleOrderStatusUpdate);
+                socket.off('order_archived', handleOrderArchived);
+            };
         }
 
-        // Auto-refresh every 30 seconds as fallback
-        const refreshInterval = setInterval(() => {
-            fetchOrders();
-        }, 30000);
-
-        return () => {
-            if (socket) {
-                socket.off('new_order');
-                socket.off('order_status_updated');
-                socket.off('order_archived');
-            }
-            clearInterval(refreshInterval);
-        };
-    }, [showToast]);
+        // Auto-refresh removed - rely on Socket.IO for real-time updates
+    }, []); // Empty dependency array - runs once on mount
 
     const fetchFoods = async () => {
         setFoodsLoading(true);
@@ -1209,7 +1241,7 @@ const AdminDashboard = () => {
     );
 
     return (
-        <div className="min-h-screen" style={{ background: 'var(--bg-gradient)' }}>
+        <div className="h-screen overflow-hidden" style={{ background: 'var(--bg-gradient)' }}>
             <ToastContainer toasts={toasts} removeToast={removeToast} />
 
             {/* Mobile Header */}
@@ -1244,10 +1276,10 @@ const AdminDashboard = () => {
                 )}
             </AnimatePresence>
 
-            <div className={`flex ${isMobile ? 'flex-col' : 'h-screen overflow-hidden'}`}>
+            <div className={`flex ${isMobile ? 'flex-col h-full' : 'h-full overflow-hidden'}`}>
                 {/* Sidebar - Fixed on Desktop */}
                 {!isMobile && (
-                    <div className="h-screen overflow-y-auto flex-shrink-0">
+                    <div className="flex-shrink-0">
                         <Sidebar
                             activeTab={activeTab}
                             setActiveTab={setActiveTab}
@@ -1261,7 +1293,7 @@ const AdminDashboard = () => {
                 )}
 
                 {/* Main Content - Scrollable */}
-                <div className={`flex-1 overflow-y-auto h-screen ${isMobile ? 'px-4 py-4' : 'p-4 md:p-6'}`}>
+                <div className={`flex-1 overflow-y-auto ${isMobile ? 'px-4 py-4' : 'p-4 md:p-6'}`}>
                     {/* Header & Stats */}
                     <motion.div
                         variants={staggerContainer}

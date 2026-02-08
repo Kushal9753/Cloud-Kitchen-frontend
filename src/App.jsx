@@ -43,7 +43,7 @@ function App() {
     return (
         <div className="min-h-screen font-sans transition-colors duration-500" style={{ background: 'var(--bg-gradient)', color: 'var(--text-primary)' }}>
             {showNavbar && <Navbar />}
-            <main className="">
+            <main className="pt-16">
                 <Suspense fallback={<PageLoader />}>
                     <Routes>
                         {/* Public Routes */}

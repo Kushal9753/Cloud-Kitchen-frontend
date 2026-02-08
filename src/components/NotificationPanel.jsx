@@ -184,7 +184,7 @@ const NotificationPanel = ({ userId }) => {
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, y: 10, scale: 0.95 }}
                         transition={{ duration: 0.2, ease: 'easeOut' }}
-                        className="absolute right-0 mt-2 w-80 sm:w-96 max-h-[70vh] overflow-hidden rounded-2xl shadow-2xl z-50"
+                        className="notification-panel absolute right-0 mt-2 w-80 sm:w-96 max-h-[70vh] overflow-hidden rounded-2xl shadow-2xl z-50"
                         style={{
                             background: 'var(--glass-bg)',
                             backdropFilter: 'blur(20px)',

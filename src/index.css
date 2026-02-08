@@ -88,7 +88,28 @@ body {
   min-height: 100vh;
   transition: var(--transition-smooth);
   width: 100%;
+  max-width: 100vw;
   overflow-x: hidden;
+  position: relative;
+}
+
+/* Ensure all direct children respect viewport */
+#root {
+  width: 100%;
+  max-width: 100vw;
+  overflow-x: hidden;
+  position: relative;
+}
+
+/* Prevent any element from causing horizontal scroll */
+* {
+  box-sizing: border-box;
+}
+
+*,
+*::before,
+*::after {
+  max-width: 100%;
 }
 
 /* Subtle ambient background */
@@ -111,6 +132,50 @@ body::before {
   background:
     radial-gradient(ellipse at 20% 20%, rgba(16, 185, 129, 0.04) 0%, transparent 50%),
     radial-gradient(ellipse at 80% 80%, rgba(59, 130, 246, 0.03) 0%, transparent 50%);
+}
+
+/* ==================== MOBILE VIEWPORT FIXES ==================== */
+/* Prevent horizontal scroll on all screen sizes */
+@media (max-width: 768px) {
+
+  body,
+  #root,
+  main,
+  section {
+    max-width: 100vw;
+  }
+
+  /* Ensure page containers don't overflow */
+  main>div,
+  section>div {
+    max-width: 100%;
+  }
+
+  /* Ensure containers don't overflow */
+  .max-w-7xl,
+  .max-w-6xl,
+  .max-w-5xl,
+  .max-w-4xl,
+  .max-w-3xl,
+  .max-w-2xl {
+    max-width: 100% !important;
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  /* Prevent specific elements from overflowing */
+  img,
+  video,
+  iframe {
+    max-width: 100%;
+    height: auto;
+  }
+}
+
+/* Exception: Notification panel should not be constrained */
+.notification-panel,
+.notification-panel * {
+  max-width: none !important;
 }
 
 /* ==================== ANIMATIONS (Minimal) ==================== */
@@ -279,7 +344,7 @@ body::before {
 
   /* ========== GLASS NAVBAR ========== */
   .glass-nav {
-    position: sticky;
+    position: fixed;
     top: 0;
     left: 0;
     right: 0;
@@ -489,6 +554,54 @@ body.modal-open #root {
   .cart-drawer {
     max-width: 100%;
   }
+}
+
+/* ==================== LINE CLAMP UTILITIES ==================== */
+.line-clamp-3 {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* ==================== RECHARTS FIXES ==================== */
+/* Ensure Recharts ResponsiveContainer renders properly */
+.recharts-responsive-container {
+  min-height: 250px !important;
+}
+
+.recharts-wrapper {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+.recharts-surface {
+  overflow: visible !important;
+}
+
+/* Fix for charts not rendering in flex containers */
+.glass-card .recharts-responsive-container {
+  display: block !important;
+}
+
+/* Ensure chart text is visible */
+.recharts-text {
+  fill: var(--text-secondary) !important;
+}
+
+.recharts-cartesian-axis-tick-value {
+  fill: var(--text-muted) !important;
+}
+
+.recharts-legend-item-text {
+  color: var(--text-primary) !important;
 }
 
 /* ==================== MENU PAGE ==================== */
