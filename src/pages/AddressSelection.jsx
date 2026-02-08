@@ -64,7 +64,9 @@ const AddressSelection = () => {
         setSaving(true);
 
         try {
+            console.log('Adding address with data:', formData);
             const { data } = await axios.post(`${API_URL}/addresses`, formData);
+            console.log('Address saved successfully:', data);
 
             setAddresses([data, ...addresses]);
             setSelectedAddress(data._id);
@@ -73,8 +75,9 @@ const AddressSelection = () => {
                 name: '', phone: '', addressLine1: '', addressLine2: '', city: '', state: '', pincode: ''
             });
         } catch (error) {
-            console.error('Failed to add address:', error);
-            alert('Failed to add address. Please try again.');
+            console.error('Failed to add address:', error.response?.data || error.message);
+            const errorMessage = error.response?.data?.message || 'Failed to add address. Please try again.';
+            alert(errorMessage);
         } finally {
             setSaving(false);
         }
