@@ -4,6 +4,7 @@ import Navbar from './components/Navbar';
 import MobileBottomNav from './components/MobileBottomNav';
 import AdminRoute from './components/AdminRoute';
 import UserRoute from './components/UserRoute';
+import ScrollToTop from './components/ScrollToTop';
 import { useDispatch } from 'react-redux';
 import { checkAuth } from './features/auth/authSlice';
 import { useEffect } from 'react';
@@ -42,6 +43,7 @@ function App() {
 
     return (
         <div className="min-h-screen font-sans transition-colors duration-500" style={{ background: 'var(--bg-gradient)', color: 'var(--text-primary)' }}>
+            <ScrollToTop />
             {showNavbar && <Navbar />}
             <main className="pt-16">
                 <Suspense fallback={<PageLoader />}>

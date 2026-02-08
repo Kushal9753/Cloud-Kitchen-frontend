@@ -78,6 +78,7 @@
 /* ==================== BASE STYLES ==================== */
 html {
   overflow-x: hidden;
+  scroll-behavior: smooth;
 }
 
 body {
@@ -1533,4 +1534,48 @@ body.modal-open #root {
   body {
     padding-bottom: 0;
   }
+}
+
+/* ==================== REDUCED MOTION ==================== */
+/* Respect user's motion preferences for better accessibility and performance */
+@media (prefers-reduced-motion: reduce) {
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .glass-card {
+    animation: none;
+    opacity: 1;
+  }
+
+  .animate-float,
+  .animate-fade-in,
+  .animate-slide-up {
+    animation: none;
+  }
+}
+
+/* ==================== PERFORMANCE OPTIMIZATIONS ==================== */
+/* Use will-change sparingly for elements that will animate */
+.glass-card:hover,
+.glass-btn:hover,
+.menu-food-card:hover {
+  will-change: transform;
+}
+
+/* Hardware acceleration hint for overlays */
+.cart-drawer-overlay,
+.modal-overlay {
+  will-change: opacity;
+}
+
+/* Optimize image rendering */
+img {
+  content-visibility: auto;
 }

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useRef, Suspense, lazy } from 'react';
 import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -13,11 +13,23 @@ import {
 import axios from 'axios';
 import { getSocket } from '../utils/socket';
 import { compressImage } from '../utils/imageUtils';
-// config import removed
-import Analytics from '../components/admin/Analytics';
-import Reviews from '../components/admin/Reviews';
-import UserManagement from '../components/admin/UserManagement';
-import CouponManagement from '../components/admin/CouponManagement';
+
+// Lazy load heavy admin components for better code-splitting
+const Analytics = lazy(() => import('../components/admin/Analytics'));
+const Reviews = lazy(() => import('../components/admin/Reviews'));
+const UserManagement = lazy(() => import('../components/admin/UserManagement'));
+const CouponManagement = lazy(() => import('../components/admin/CouponManagement'));
+const AdminManagement = lazy(() => import('../components/admin/AdminManagement'));
+
+// Loading fallback for lazy components
+const ComponentLoader = () => (
+    <div className="flex items-center justify-center min-h-[300px]">
+        <div className="glass-card p-8 flex items-center gap-3">
+            <div className="w-6 h-6 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>
+            <span style={{ color: 'var(--text-primary)' }}>Loading...</span>
+        </div>
+    </div>
+);
 
 // Socket connection handled via getSocket utils
 
@@ -1698,7 +1710,9 @@ const AdminDashboard = () => {
                                     transition={{ duration: 0.3 }}
                                     className="p-4 md:p-6"
                                 >
-                                    <UserManagement showToast={showToast} user={user} />
+                                    <Suspense fallback={<ComponentLoader />}>
+                                        <UserManagement showToast={showToast} user={user} />
+                                    </Suspense>
                                 </motion.div>
                             )}
 
@@ -1724,7 +1738,9 @@ const AdminDashboard = () => {
                                     transition={{ duration: 0.3 }}
                                     className="p-4 md:p-6"
                                 >
-                                    <Analytics showToast={showToast} />
+                                    <Suspense fallback={<ComponentLoader />}>
+                                        <Analytics showToast={showToast} />
+                                    </Suspense>
                                 </motion.div>
                             )}
 
@@ -1737,7 +1753,9 @@ const AdminDashboard = () => {
                                     transition={{ duration: 0.3 }}
                                     className="p-4 md:p-6"
                                 >
-                                    <Reviews showToast={showToast} />
+                                    <Suspense fallback={<ComponentLoader />}>
+                                        <Reviews showToast={showToast} />
+                                    </Suspense>
                                 </motion.div>
                             )}
 
@@ -1750,7 +1768,9 @@ const AdminDashboard = () => {
                                     transition={{ duration: 0.3 }}
                                     className="p-4 md:p-6"
                                 >
-                                    <CouponManagement showToast={showToast} />
+                                    <Suspense fallback={<ComponentLoader />}>
+                                        <CouponManagement showToast={showToast} />
+                                    </Suspense>
                                 </motion.div>
                             )}
 
@@ -1763,7 +1783,9 @@ const AdminDashboard = () => {
                                     transition={{ duration: 0.3 }}
                                     className="p-4 md:p-6"
                                 >
-                                    <AdminManagement showToast={showToast} />
+                                    <Suspense fallback={<ComponentLoader />}>
+                                        <AdminManagement showToast={showToast} />
+                                    </Suspense>
                                 </motion.div>
                             )}
 
