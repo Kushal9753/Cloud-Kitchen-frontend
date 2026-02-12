@@ -209,7 +209,7 @@ const ImageUpload = ({ imageUrl, previewUrl, onFileSelect, isUploading }) => {
                     accept="image/*"
                     onChange={handleFileSelect}
                     className="hidden"
-                    required
+                    required={!imageUrl && !previewUrl}
                 />
 
                 {isUploading ? (

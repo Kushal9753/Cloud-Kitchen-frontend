@@ -5,7 +5,7 @@ import MobileBottomNav from './components/MobileBottomNav';
 import AdminRoute from './components/AdminRoute';
 import UserRoute from './components/UserRoute';
 import ScrollToTop from './components/ScrollToTop';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { checkAuth } from './features/auth/authSlice';
 import { useEffect } from 'react';
 
@@ -32,6 +32,8 @@ const PageLoader = () => (
 function App() {
     const dispatch = useDispatch();
 
+    const { isAuthChecked } = useSelector((state) => state.auth);
+
     useEffect(() => {
         dispatch(checkAuth());
     }, [dispatch]);
@@ -40,6 +42,10 @@ function App() {
     // Hide navbar/footer on login, signup, and admin routes (if handled by Admin layout)
     const isAuthPage = location.pathname === '/login' || location.pathname === '/signup' || location.pathname.startsWith('/login') || location.pathname.startsWith('/signup');
     const showNavbar = !isAuthPage;
+
+    if (!isAuthChecked) {
+        return <PageLoader />;
+    }
 
     return (
         <div className="min-h-screen font-sans transition-colors duration-500" style={{ background: 'var(--bg-gradient)', color: 'var(--text-primary)' }}>

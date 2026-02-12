@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { login, reset } from '../features/auth/authSlice';
 import { Mail, Lock, Loader2, ArrowRight, Sparkles } from 'lucide-react';
@@ -14,20 +14,26 @@ const Login = () => {
 
     const { user, isLoading, isError, isSuccess, message } = useSelector((state) => state.auth);
 
+    const location = useLocation();
+    const from = location.state?.from?.pathname || '/';
+
     useEffect(() => {
         if (isError) {
-            alert(message);
+            // Only show error if it's a real login error, not just "not authorized" from checkAuth
+            if (message && message !== 'Not authorized, no token') {
+                alert(message);
+            }
         }
         if (isSuccess || user) {
-            // Role-based redirect
+            // Role-based redirect or redirect back to where they came from
             if (user && (user.role === 'admin' || user.role === 'superadmin' || user.isSuperAdmin === true)) {
                 navigate('/admin');
-            } else if (user && user.role === 'user') {
-                navigate('/');
+            } else if (user) {
+                navigate(from, { replace: true });
             }
         }
         dispatch(reset());
-    }, [user, isError, isSuccess, message, navigate, dispatch]);
+    }, [user, isError, isSuccess, message, navigate, dispatch, from]);
 
     const onChange = (e) => setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
 
